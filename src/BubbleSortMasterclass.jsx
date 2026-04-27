@@ -293,21 +293,21 @@ One more largest element has reached its correct position.`;
     <div
       style={{
         backgroundColor: T.bg,
-        height: "100vh",
-        overflowY: "scroll",
+        minHeight: "100vh",
+        overflowY: "auto",
         scrollSnapType: "y mandatory",
       }}
     >
       {/* 🟢 PAGE 1 */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          padding: "15px 40px",
+          padding: "clamp(10px, 3vw, 20px) clamp(12px, 5vw, 40px)",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
-          overflow: "hidden",
+          overflow: "visible",
           justifyContent: "space-between",
         }}
       >
@@ -324,7 +324,8 @@ One more largest element has reached its correct position.`;
         <div
           style={{
             display: "flex",
-            gap: "15px",
+            flexWrap: "wrap",
+            gap: "clamp(8px, 2vw, 15px)",
             maxWidth: "1000px",
             width: "100%",
             margin: "0 auto",
@@ -361,8 +362,8 @@ One more largest element has reached its correct position.`;
             style={{
               display: "flex",
               alignItems: "flex-end",
-              gap: "10px",
-              height: "180px",
+              gap: "clamp(4px, 1.5vw, 10px)",
+              height: "clamp(120px, 30vw, 180px)",
             }}
           >
             {array.map((val, idx) => {
@@ -382,8 +383,8 @@ One more largest element has reached its correct position.`;
                 >
                   <div
                     style={{
-                      width: "42px",
-                      height: `${val * 1.8}px`,
+                      width: "clamp(16px, 5vw, 42px)",
+                      height: `${val * 1.5}px`,
                       backgroundColor:
                         phase === "done"
                           ? T.green
@@ -437,7 +438,7 @@ One more largest element has reached its correct position.`;
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1.5fr 2fr",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
                   gap: "20px",
                 }}
               >
@@ -447,7 +448,7 @@ One more largest element has reached its correct position.`;
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
                     gap: "10px",
                   }}
                 >
@@ -528,11 +529,11 @@ One more largest element has reached its correct position.`;
       {/* 🔵 PAGE 2 */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: "60px",
+          padding: "clamp(20px, 5vw, 60px)",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
         }}
@@ -623,8 +624,8 @@ const StatBox = ({ label, value, color, desc }) => (
 const styles = {
   btnBack: {
     position: "absolute",
-    left: "40px",
-    top: "25px",
+    left: "clamp(10px, 4vw, 40px)",
+    top: "clamp(10px, 4vw, 25px)",
     background: "transparent",
     border: `1px solid ${T.border}`,
     color: T.textMuted,
@@ -633,7 +634,7 @@ const styles = {
     cursor: "pointer",
   },
   title: {
-    fontSize: "3rem",
+    fontSize: "clamp(1.8rem, 5vw, 3rem)",
     fontWeight: "900",
     margin: 0,
     background: "linear-gradient(90deg, #f43f5e, #fb923c, #f59e0b)",
@@ -683,12 +684,16 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
-  narrativeText: { fontSize: "17px", color: T.textMuted, lineHeight: 1.4 },
+  narrativeText: {
+    fontSize: "clamp(13px, 3.5vw, 17px)",
+    color: T.textMuted,
+    lineHeight: 1.4,
+  },
   controls: {
     display: "flex",
+    flexWrap: "wrap",
     gap: "10px",
     justifyContent: "center",
-    paddingBottom: "20px",
   },
   btnPrimary: {
     background: T.accent,
@@ -709,7 +714,11 @@ const styles = {
     cursor: "pointer",
     fontSize: "13px",
   },
-  footerGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
+  footerGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "20px",
+  },
   infoCard: {
     background: T.surface,
     padding: "18px 24px",

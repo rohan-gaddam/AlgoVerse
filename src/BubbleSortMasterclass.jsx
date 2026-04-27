@@ -89,16 +89,44 @@ export default function BubbleSortMasterclass() {
     stateRef.current = { array, i, j, phase, stats };
   }, [array, i, j, phase, stats]);
 
-  const speak = (text) => {
-    window.speechSynthesis.cancel();
-    if (isMuted || !window.speechSynthesis || isPlaying || quiz.active) return;
-    window.speechSynthesis.speak(
-      new SpeechSynthesisUtterance(
-        text.replace(/PASS START:|COMPARE:|SWAP:|SUCCESS:/g, ""),
-      ),
+  const cleanText = (text) => {
+    return text
+      .replace(/\[.*?\]/g, "") // remove [i], [j]
+      .replace(/[{}()]/g, "") // remove brackets
+      .replace(/=/g, " becomes ") // replace =
+      .replace(/</g, " is less than ")
+      .replace(/>/g, " is greater than ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const getBestVoice = () => {
+    const voices = speechSynthesis.getVoices();
+
+    // Try to get good natural voice
+    return (
+      voices.find((v) => v.name.includes("Google")) ||
+      voices.find((v) => v.name.includes("Microsoft")) ||
+      voices.find((v) => v.name.includes("Female")) ||
+      voices[0]
     );
   };
 
+  const speak = (text) => {
+    if (isMuted) return;
+
+    const utterance = new SpeechSynthesisUtterance(text);
+
+    // 🔥 ADD THIS LINE
+    utterance.voice = getBestVoice();
+
+    // Improve clarity
+    utterance.rate = 0.9;
+    utterance.pitch = 1.1;
+
+    speechSynthesis.cancel(); // stop previous speech
+    speechSynthesis.speak(utterance);
+  };
   const doStep = useCallback(() => {
     const st = stateRef.current;
     if (st.phase === "done") return;

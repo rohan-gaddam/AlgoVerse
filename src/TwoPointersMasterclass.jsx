@@ -82,7 +82,7 @@ const buildSteps = (arr, target) => {
 👉 Left pointer at index ${L} → value ${arr[L]}
 👉 Right pointer at index ${R} → value ${arr[R]}
 
-We calculate the sum: ${arr[L]} + ${arr[R]} = ${sum}
+We calculate the sum: ${arr[L]} + ${arr[R]} = ${sum}.
 
 Now we compare this sum with the target ${target}
 to decide our next move.`,

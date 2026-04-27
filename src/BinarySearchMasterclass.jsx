@@ -80,17 +80,37 @@ export default function BinarySearchMasterclass() {
   const autoPlayRef = useRef(null);
   const current = steps[stepIdx] || null;
 
+  const cleanText = (text) => {
+    return text
+      .replace(/👉|🔵|🔍|➡️|⬅️|🎯|❌/g, "")
+      .replace(
+        /INITIALIZATION:|MIDPOINT:|FOUND:|MOVE RIGHT:|MOVE LEFT:|NOT FOUND:/g,
+        "",
+      )
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
   const speak = (text) => {
-    window.speechSynthesis.cancel();
-    if (isMuted || !window.speechSynthesis || isPlaying || quiz.active) return;
-    window.speechSynthesis.speak(
-      new SpeechSynthesisUtterance(
-        text.replace(
-          /INITIALIZATION:|MIDPOINT:|FOUND:|MOVE RIGHT:|MOVE LEFT:|NOT FOUND:/g,
-          "",
-        ),
-      ),
-    );
+    if (isMuted || !window.speechSynthesis || quiz.active) return;
+
+    const cleaned = cleanText(text);
+
+    const utterance = new SpeechSynthesisUtterance(cleaned);
+
+    const voices = window.speechSynthesis.getVoices();
+    const voice =
+      voices.find((v) => v.name.includes("Google US English")) ||
+      voices.find((v) => v.lang === "en-US") ||
+      voices[0];
+
+    if (voice) utterance.voice = voice;
+
+    utterance.rate = 0.85;
+    utterance.pitch = 1.05;
+    utterance.lang = "en-US";
+
+    window.speechSynthesis.speak(utterance);
   };
 
   const buildSteps = (array, val) => {
@@ -311,21 +331,21 @@ and ${val} does not exist in the array.`,
     <div
       style={{
         backgroundColor: T.bg,
-        height: "100vh",
-        overflowY: "scroll",
+        minHeight: "100vh",
+        overflowY: "auto",
         scrollSnapType: "y mandatory",
       }}
     >
       {/* 🟢 PAGE 1 */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          padding: "20px 40px",
+          padding: "clamp(10px, 3vw, 20px) clamp(12px, 5vw, 40px)",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
-          overflow: "hidden",
+          overflow: "visible",
           justifyContent: "space-between",
         }}
       >
@@ -345,7 +365,8 @@ and ${val} does not exist in the array.`,
         <div
           style={{
             display: "flex",
-            gap: "15px",
+            flexWrap: "wrap",
+            gap: "clamp(8px, 2vw, 15px)",
             maxWidth: "1000px",
             width: "100%",
             margin: "0 auto",
@@ -382,8 +403,8 @@ and ${val} does not exist in the array.`,
             style={{
               display: "flex",
               alignItems: "flex-end",
-              gap: "10px",
-              height: "180px",
+              gap: "clamp(4px, 1.5vw, 10px)",
+              height: "clamp(120px, 30vw, 180px)",
             }}
           >
             {arr.map((val, idx) => {
@@ -402,8 +423,8 @@ and ${val} does not exist in the array.`,
                 >
                   <div
                     style={{
-                      width: "42px",
-                      height: `${val * 1.8}px`,
+                      width: "clamp(16px, 5vw, 42px)",
+                      height: `${val * 1.5}px`,
                       backgroundColor: isFound
                         ? T.green
                         : isMid
@@ -461,7 +482,7 @@ and ${val} does not exist in the array.`,
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1.5fr 2fr",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
                   gap: "20px",
                 }}
               >
@@ -471,7 +492,7 @@ and ${val} does not exist in the array.`,
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
                     gap: "10px",
                   }}
                 >
@@ -551,11 +572,11 @@ and ${val} does not exist in the array.`,
       {/* 🔵 PAGE 2 */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: "60px",
+          padding: "clamp(20px, 5vw, 60px)",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
         }}
@@ -648,8 +669,8 @@ const StatBox = ({ label, value, color, desc }) => (
 const styles = {
   btnBack: {
     position: "absolute",
-    left: "40px",
-    top: "25px",
+    left: "clamp(10px, 4vw, 40px)",
+    top: "clamp(10px, 4vw, 25px)",
     background: "transparent",
     border: `1px solid ${T.border}`,
     color: T.textMuted,
@@ -658,7 +679,7 @@ const styles = {
     cursor: "pointer",
   },
   title: {
-    fontSize: "3.5rem",
+    fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
     fontWeight: "900",
     margin: 0,
     background: "linear-gradient(90deg, #8B5CF6, #3B9EFF, #06B6D4)",
@@ -711,6 +732,7 @@ const styles = {
   narrativeText: { fontSize: "17px", color: T.textMuted, lineHeight: 1.4 },
   controls: {
     display: "flex",
+    flexWrap: "wrap",
     gap: "10px",
     justifyContent: "center",
     paddingBottom: "20px",
@@ -744,7 +766,11 @@ const styles = {
     cursor: "pointer",
     fontSize: "14px",
   },
-  footerGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
+  footerGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gap: "20px",
+  },
   infoCard: {
     background: T.surface,
     padding: "18px 24px",

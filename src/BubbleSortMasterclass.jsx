@@ -637,7 +637,7 @@ const styles = {
     fontSize: "clamp(1.8rem, 5vw, 3rem)",
     fontWeight: "900",
     margin: 0,
-    background: "linear-gradient(90deg, #f43f5e, #fb923c, #f59e0b)",
+    background: "linear-gradient(90deg, #60a5fa, #3b82f6, #0ea5e9)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
   },

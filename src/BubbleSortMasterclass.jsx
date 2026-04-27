@@ -89,11 +89,16 @@ export default function BubbleSortMasterclass() {
     stateRef.current = { array, i, j, phase, stats };
   }, [array, i, j, phase, stats]);
 
+  // 👇 ADD THIS HERE
+  useEffect(() => {
+    speechSynthesis.getVoices();
+  }, []);
   const cleanText = (text) => {
     return text
-      .replace(/\[.*?\]/g, "") // remove [i], [j]
-      .replace(/[{}()]/g, "") // remove brackets
-      .replace(/=/g, " becomes ") // replace =
+      .replace(/👉|✅|❌|🔁|🔍|🔄|🏁/g, "") // remove emojis
+      .replace(/\[.*?\]/g, "")
+      .replace(/[{}()]/g, "")
+      .replace(/=/g, " becomes ")
       .replace(/</g, " is less than ")
       .replace(/>/g, " is greater than ")
       .replace(/\s+/g, " ")
@@ -113,19 +118,25 @@ export default function BubbleSortMasterclass() {
   };
 
   const speak = (text) => {
-    if (isMuted) return;
+    if (isMuted || !window.speechSynthesis || quiz.active) return;
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const cleaned = cleanText(text);
+    const utterance = new SpeechSynthesisUtterance(cleaned);
 
-    // 🔥 ADD THIS LINE
-    utterance.voice = getBestVoice();
+    const voices = window.speechSynthesis.getVoices();
+    const voice =
+      voices.find((v) => v.name.includes("Google UK English Female")) ||
+      voices.find((v) => v.name.includes("Microsoft Zira")) ||
+      voices.find((v) => v.lang === "en-US") ||
+      voices[0];
 
-    // Improve clarity
-    utterance.rate = 0.9;
-    utterance.pitch = 1.1;
+    if (voice) utterance.voice = voice;
 
-    speechSynthesis.cancel(); // stop previous speech
-    speechSynthesis.speak(utterance);
+    utterance.rate = 0.85;
+    utterance.pitch = 1.05;
+
+    // ❌ NO cancel here
+    window.speechSynthesis.speak(utterance);
   };
   const doStep = useCallback(() => {
     const st = stateRef.current;

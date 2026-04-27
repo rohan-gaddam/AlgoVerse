@@ -106,36 +106,29 @@ export default function BubbleSortMasterclass() {
   };
 
   const getBestVoice = () => {
-    const voices = speechSynthesis.getVoices();
+    const voices = window.speechSynthesis.getVoices();
 
-    // Try to get good natural voice
+    // Prefer Google male voice (Chrome desktop)
     return (
-      voices.find((v) => v.name.includes("Google")) ||
-      voices.find((v) => v.name.includes("Microsoft")) ||
-      voices.find((v) => v.name.includes("Female")) ||
+      voices.find((v) => v.name.includes("Google US English")) ||
+      voices.find((v) => v.name.includes("Google UK English")) ||
+      voices.find((v) => v.lang === "en-US") ||
       voices[0]
     );
   };
-
   const speak = (text) => {
     if (isMuted || !window.speechSynthesis || quiz.active) return;
 
     const cleaned = cleanText(text);
     const utterance = new SpeechSynthesisUtterance(cleaned);
 
-    const voices = window.speechSynthesis.getVoices();
-    const voice =
-      voices.find((v) => v.name.includes("Google UK English Female")) ||
-      voices.find((v) => v.name.includes("Microsoft Zira")) ||
-      voices.find((v) => v.lang === "en-US") ||
-      voices[0];
-
+    const voice = getBestVoice();
     if (voice) utterance.voice = voice;
 
+    utterance.lang = "en-US";
     utterance.rate = 0.85;
     utterance.pitch = 1.05;
 
-    // ❌ NO cancel here
     window.speechSynthesis.speak(utterance);
   };
   const doStep = useCallback(() => {

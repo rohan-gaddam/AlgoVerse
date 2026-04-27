@@ -148,8 +148,8 @@ export default function Home() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          paddingTop: "80px",
-          paddingBottom: "100px",
+          paddingTop: "clamp(40px, 8vw, 80px)",
+          paddingBottom: "clamp(50px, 10vw, 100px)",
           position: "relative",
           zIndex: 1,
         }}
@@ -160,8 +160,8 @@ export default function Home() {
             width: "90%",
             maxWidth: "1200px",
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
-            gap: "60px",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+            gap: "clamp(20px, 5vw, 60px)",
             marginBottom: "80px",
             alignItems: "center",
             animation: "slideIn 1s ease-out",
@@ -239,7 +239,7 @@ export default function Home() {
 
             <h2
               style={{
-                fontSize: "3.5rem",
+                fontSize: "clamp(2rem, 6vw, 3.5rem)",
                 fontWeight: "900",
                 lineHeight: "1.1",
                 marginBottom: "25px",
@@ -276,7 +276,7 @@ export default function Home() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "1fr 1fr",
+              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
               gap: "20px",
             }}
           >
@@ -355,7 +355,9 @@ export default function Home() {
                 borderRadius: "20px",
                 border: "1px solid rgba(99,102,241,0.3)",
                 display: "flex",
-                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "10px",
+                justifyContent: "center",
                 alignItems: "center",
                 backdropFilter: "blur(10px)",
                 transition: "all 0.3s ease",
@@ -416,7 +418,7 @@ export default function Home() {
         >
           <h1
             style={{
-              fontSize: "5.5rem",
+              fontSize: "clamp(2.5rem, 8vw, 5.5rem)",
               fontWeight: "900",
               background: "linear-gradient(90deg, #6366f1, #a855f7, #22d3ee)",
               backgroundSize: "200% auto",
@@ -459,7 +461,7 @@ export default function Home() {
             onChange={(e) => setSearchQuery(e.target.value)}
             style={{
               width: "100%",
-              padding: "22px 35px",
+              padding: "clamp(12px, 3vw, 22px) clamp(16px, 5vw, 35px)",
               borderRadius: "100px",
               background: "rgba(15,23,42,0.9)",
               border: "1px solid rgba(99,102,241,0.5)",
@@ -497,7 +499,7 @@ export default function Home() {
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
             gap: "35px",
             width: "92%",
             maxWidth: "1300px",
@@ -513,7 +515,7 @@ export default function Home() {
                   backdropFilter: "blur(20px)",
                   background: "rgba(15,23,42,0.75)",
                   border: "1px solid rgba(99,102,241,0.2)",
-                  padding: "40px",
+                  padding: "clamp(16px, 4vw, 40px)",
                   borderRadius: "28px",
                   cursor: "pointer",
                   transition:
@@ -536,7 +538,12 @@ export default function Home() {
                   e.currentTarget.style.animationPlayState = "running";
                 }}
               >
-                <div style={{ fontSize: "3.5rem", marginBottom: "15px" }}>
+                <div
+                  style={{
+                    fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
+                    marginBottom: "15px",
+                  }}
+                >
                   {algo.icon}
                 </div>
                 <h3

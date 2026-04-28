@@ -99,6 +99,16 @@ export default function QuickSortMasterclass() {
     callStack,
   });
 
+  // Responsiveness State
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = width < 768;
+
   useEffect(() => {
     stateRef.current = { array, i, j, key, phase, stats, low, high, callStack };
   }, [array, i, j, key, phase, stats, low, high, callStack]);
@@ -258,7 +268,7 @@ This position is final for the pivot.
 
   const codeSnippets = {
     Java: `void quickSort(int[] arr, int low, int high) {\n  if (low < high) {\n    int pi = partition(arr, low, high);\n    quickSort(arr, low, pi - 1);\n    quickSort(arr, pi + 1, high);\n  }\n}\n\nint partition(int[] arr, int low, int high) {\n  int pivot = arr[high], i = low - 1;\n  for (int j = low; j < high; j++) {\n    if (arr[j] <= pivot) swap(arr, ++i, j);\n  }\n  swap(arr, i + 1, high); return i + 1;\n}`,
-    Python: `def quick_sort(arr, low, high):\n    if low < high:\n        pi = partition(arr, low, high)\n        quick_sort(arr, low, pi - 1)\n        quick_sort(arr, pi + 1, high)\n\ndef partition(arr, low, high):\n    pivot = arr[high]\n    i = low - 1\n    for j in range(low, high):\n        if arr[j] <= pivot:\n            i += 1\n            arr[i], arr[j] = arr[j], arr[i]\n    arr[i+1], arr[high] = arr[high], arr[i+1]\n    return i + 1`,
+    Python: `def quick_sort(arr, low, high):\n    if low < high:\n        pi = partition(arr, low, high)\n        quick_sort(arr, low, pi - 1)\n        quick_sort(arr, low, pi + 1, high)\n\ndef partition(arr, low, high):\n    pivot = arr[high]\n    i = low - 1\n    for j in range(low, high):\n        if arr[j] <= pivot:\n            i += 1\n            arr[i], arr[j] = arr[j], arr[i]\n    arr[i+1], arr[high] = arr[high], arr[i+1]\n    return i + 1`,
     "C++": `int partition(int arr[], int low, int high) {\n    int pivot = arr[high], i = low - 1;\n    for (int j = low; j < high; j++) {\n        if (arr[j] <= pivot) swap(arr[++i], arr[j]);\n    }\n    swap(arr[i + 1], arr[high]);\n    return i + 1;\n}\n\nvoid quickSort(int arr[], int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}`,
     C: `int partition(int arr[], int low, int high) {\n    int pivot = arr[high], i = low - 1, temp;\n    for (int j = low; j < high; j++) {\n        if (arr[j] <= pivot) {\n            i++; temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;\n        }\n    }\n    temp = arr[i+1]; arr[i+1] = arr[high]; arr[high] = temp;\n    return i + 1;\n}`,
   };
@@ -310,75 +320,94 @@ This position is final for the pivot.
       style={{
         backgroundColor: T.bg,
         height: "100vh",
-        overflowY: "scroll",
-        scrollSnapType: "y mandatory",
+        overflowY: "auto",
+        scrollSnapType: isMobile ? "none" : "y mandatory",
+        color: T.textMain,
       }}
     >
       {/* 🟢 PAGE 1 */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          padding: "20px 40px",
+          padding: isMobile ? "15px" : "20px 40px",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
-          overflow: "hidden",
-          justifyContent: "space-between",
         }}
       >
-        <button style={styles.btnBack} onClick={() => navigate("/")}>
-          ← Back
-        </button>
-        <header style={{ textAlign: "center" }}>
-          <h1 style={styles.title}>AlgoVerse</h1>
-          <div style={{ fontSize: "11px", color: T.textMuted }}>
+        <header
+          style={{
+            position: "relative",
+            textAlign: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <button
+            style={styles.btnBack(isMobile)}
+            onClick={() => navigate("/")}
+          >
+            ← Back
+          </button>
+          <h1 style={styles.title(isMobile)}>AlgoVerse</h1>
+          <div
+            style={{ fontSize: isMobile ? "10px" : "11px", color: T.textMuted }}
+          >
             Quick Sort Mastery Explorer
           </div>
         </header>
 
         <div
           style={{
-            display: "flex",
-            gap: "15px",
+            display: "grid",
+            gridTemplateColumns: isMobile
+              ? "repeat(2, 1fr)"
+              : "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: isMobile ? "10px" : "15px",
             maxWidth: "1000px",
             width: "100%",
-            margin: "0 auto",
+            margin: "0 auto 15px",
           }}
         >
           <StatBox
             label="COMPARISONS"
             value={stats.cmp}
             color={T.cyan}
-            desc="Logic Checks"
+            desc="Checks"
+            isMobile={isMobile}
           />
           <StatBox
             label="SWAPS"
             value={stats.swp}
             color={T.pink}
-            desc="Elements Moved"
+            desc="Moved"
+            isMobile={isMobile}
           />
           <StatBox
-            label="PIVOT VALUE"
+            label="PIVOT"
             value={key ?? "-"}
             color={T.orange}
-            desc="Active Reference"
+            desc="Active Ref"
+            isMobile={isMobile}
           />
           <StatBox
-            label="POINTER (i)"
+            label="INDEX (i)"
             value={i}
             color={T.purple}
-            desc="Partition Index"
+            desc="Partition Idx"
+            isMobile={isMobile}
           />
         </div>
 
-        <div style={styles.canvas}>
+        <div style={styles.canvas(isMobile)}>
           <div
             style={{
               display: "flex",
               alignItems: "flex-end",
-              gap: "10px",
-              height: "180px",
+              justifyContent: "center",
+              gap: isMobile ? "4px" : "12px",
+              height: isMobile ? "150px" : "200px",
+              width: "100%",
             }}
           >
             {array.map((val, idx) => (
@@ -392,8 +421,8 @@ This position is final for the pivot.
               >
                 <div
                   style={{
-                    width: "40px",
-                    height: `${val * 1.8}px`,
+                    width: isMobile ? "18px" : "45px", // FIXED: Increased width for Desktop
+                    height: `${val * (isMobile ? 1.3 : 2.0)}px`,
                     backgroundColor:
                       phase === "done"
                         ? T.green
@@ -411,7 +440,7 @@ This position is final for the pivot.
                 />
                 <div
                   style={{
-                    fontSize: "10px",
+                    fontSize: isMobile ? "8px" : "10px",
                     marginTop: "6px",
                     fontWeight: "bold",
                     color:
@@ -437,12 +466,12 @@ This position is final for the pivot.
           </div>
         </div>
 
-        <div style={styles.narrativeBox}>
+        <div style={styles.narrativeBox(isMobile)}>
           <div style={styles.narrativeHeader}>
             <span>
               {quiz.active ? "MASTERY CHALLENGE" : "LIVE LOGIC INTERPRETER"}
             </span>
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               {!quiz.active && !quiz.finished && (
                 <button
                   onClick={() => setQuiz({ ...quiz, active: true })}
@@ -454,26 +483,32 @@ This position is final for the pivot.
               <span style={styles.phaseTag}>{phase.toUpperCase()}</span>
             </div>
           </div>
-          <div style={styles.narrativeText}>
+          <div style={styles.narrativeText(isMobile)}>
             {quiz.finished ? (
-              <div style={{ textAlign: "center", color: T.green }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  color: T.green,
+                  fontSize: isMobile ? "20px" : "24px",
+                }}
+              >
                 🏆 MASTERY ACHIEVED: {quiz.score}%
               </div>
             ) : quiz.active ? (
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "1.5fr 2fr",
-                  gap: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
                 }}
               >
-                <div style={{ fontSize: "18px" }}>
+                <div style={{ fontSize: isMobile ? "14px" : "18px" }}>
                   {QUICK_QUIZ[quiz.step].q}
                 </div>
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                     gap: "10px",
                   }}
                 >
@@ -502,9 +537,9 @@ This position is final for the pivot.
           </div>
         </div>
 
-        <div style={styles.controls}>
+        <div style={styles.controls(isMobile)}>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               if (history.length > 0) {
                 const p = history.pop();
@@ -520,19 +555,14 @@ This position is final for the pivot.
           >
             Undo
           </button>
-          <button style={styles.btnPrimary} onClick={doStep}>
-            Next Step ▶
+          <button style={styles.btnPrimary(isMobile)} onClick={doStep}>
+            Next ▶
           </button>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               const newMute = !isMuted;
-
-              if (newMute) {
-                // ❗ STOP speech immediately when muting
-                window.speechSynthesis.cancel();
-              }
-
+              if (newMute) window.speechSynthesis.cancel();
               setIsMuted(newMute);
             }}
           >
@@ -540,14 +570,14 @@ This position is final for the pivot.
           </button>
           <button
             style={{
-              ...styles.btnPrimary,
+              ...styles.btnPrimary(isMobile),
               background: isPlaying ? T.pink : T.accent,
             }}
             onClick={() => setIsPlaying(!isPlaying)}
           >
-            {isPlaying ? "Pause" : "Auto Play"}
+            {isPlaying ? "Pause" : "Auto"}
           </button>
-          <button style={styles.btnSecondary} onClick={handleReset}>
+          <button style={styles.btnSecondary(isMobile)} onClick={handleReset}>
             Reset
           </button>
         </div>
@@ -556,43 +586,47 @@ This position is final for the pivot.
       {/* 🔵 PAGE 2 */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          padding: "60px",
+          padding: isMobile ? "40px 20px" : "60px",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
+          gap: "30px",
         }}
       >
-        <div style={styles.footerGrid}>
-          <div style={styles.infoCard}>
-            <h2 style={styles.footerH2}>How it Works</h2>
-            <p style={styles.footerP}>
+        <div style={styles.footerGrid(isMobile)}>
+          <div style={styles.infoCard(isMobile)}>
+            <h2 style={styles.footerH2(isMobile)}>How it Works</h2>
+            <p style={styles.footerP(isMobile)}>
               Quick Sort is a Divide & Conquer algorithm. It picks a pivot and
               partitions the array such that left side ≤ pivot &lt; right side.
             </p>
           </div>
-          <div style={styles.infoCard}>
-            <h2 style={styles.footerH2}>Cost Efficiency</h2>
-            <p style={styles.footerP}>
-              <b>Time Complexity:</b> Average O(n log n), Worst O(n²).
+          <div style={styles.infoCard(isMobile)}>
+            <h2 style={styles.footerH2(isMobile)}>Efficiency</h2>
+            <p style={styles.footerP(isMobile)}>
+              <b>Time:</b> Avg O(n log n), Worst O(n²).
               <br />
-              <b>Space Complexity:</b> O(log n) for recursion stack.
+              <b>Space:</b> O(log n) stack memory.
             </p>
           </div>
         </div>
-        <div style={{ ...styles.infoCard, marginTop: "30px" }}>
+        <div style={styles.infoCard(isMobile)}>
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               justifyContent: "space-between",
               alignItems: "center",
               marginBottom: "15px",
+              gap: "10px",
             }}
           >
-            <h2 style={{ color: T.pink, fontSize: "24px" }}>Implementation</h2>
-            <div style={{ display: "flex", gap: "15px" }}>
+            <h2 style={{ color: T.pink, fontSize: isMobile ? "20px" : "24px" }}>
+              Implementation
+            </h2>
+            <div style={{ display: "flex", gap: "12px" }}>
               {["Java", "Python", "C++", "C"].map((l) => (
                 <span
                   key={l}
@@ -602,13 +636,14 @@ This position is final for the pivot.
                     fontWeight: 800,
                     cursor: "pointer",
                     opacity: activeLang === l ? 1 : 0.5,
+                    fontSize: isMobile ? "12px" : "14px",
                   }}
                 >
                   {l}
                 </span>
               ))}
               <button
-                style={styles.copyBtn}
+                style={styles.copyBtn(isMobile)}
                 onClick={() => {
                   navigator.clipboard.writeText(codeSnippets[activeLang]);
                   setCopyStatus("Copied!");
@@ -619,7 +654,7 @@ This position is final for the pivot.
               </button>
             </div>
           </div>
-          <pre style={styles.codeBlock}>
+          <pre style={styles.codeBlock(isMobile)}>
             <code>{codeSnippets[activeLang]}</code>
           </pre>
         </div>
@@ -628,30 +663,42 @@ This position is final for the pivot.
   );
 }
 
-const StatBox = ({ label, value, color, desc }) => (
+const StatBox = ({ label, value, color, desc, isMobile }) => (
   <div
     style={{
-      flex: 1,
-      padding: "12px 15px",
+      padding: isMobile ? "10px" : "12px 15px",
       borderRadius: "12px",
       border: `1px solid ${T.border}`,
       borderTop: `3px solid ${color}`,
       background: T.surface,
     }}
   >
-    <div style={{ fontSize: "10px", fontWeight: 700, color: T.textMuted }}>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "10px",
+        fontWeight: 700,
+        color: T.textMuted,
+      }}
+    >
       {label}
     </div>
-    <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
-    <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.3)" }}>
+    <div style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: 800 }}>
+      {value}
+    </div>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "9px",
+        color: "rgba(255,255,255,0.3)",
+      }}
+    >
       {desc}
     </div>
   </div>
 );
 
 const styles = {
-  btnBack: {
-    position: "absolute",
+  btnBack: (isMobile) => ({
+    position: isMobile ? "static" : "absolute",
     left: "40px",
     top: "25px",
     background: "transparent",
@@ -660,18 +707,19 @@ const styles = {
     padding: "6px 12px",
     borderRadius: "6px",
     cursor: "pointer",
-  },
-  title: {
-    fontSize: "3rem",
+    marginBottom: isMobile ? "10px" : "0",
+  }),
+  title: (isMobile) => ({
+    fontSize: isMobile ? "2rem" : "3.5rem",
     fontWeight: "900",
     margin: 0,
     background: "linear-gradient(90deg, #6366f1, #22d3ee)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-  },
-  canvas: {
-    flexGrow: 1,
-    maxHeight: "240px",
+  }),
+  canvas: (isMobile) => ({
+    flex: 1,
+    minHeight: isMobile ? "220px" : "260px",
     margin: "15px 0",
     background: "rgba(13,17,28,0.3)",
     borderRadius: "20px",
@@ -679,22 +727,24 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-  },
-  narrativeBox: {
+    padding: "20px",
+    overflowX: "auto",
+  }),
+  narrativeBox: (isMobile) => ({
     background: T.surface,
     borderRadius: "12px",
-    padding: "15px 30px",
+    padding: isMobile ? "15px" : "15px 30px",
     border: `1px solid ${T.border}`,
     marginBottom: "15px",
-    minHeight: "120px",
-  },
+    minHeight: isMobile ? "140px" : "120px",
+  }),
   narrativeHeader: {
     display: "flex",
     justifyContent: "space-between",
     color: "#818cf8",
     fontSize: "11px",
     fontWeight: 800,
-    marginBottom: "8px",
+    marginBottom: "12px",
   },
   phaseTag: {
     background: "#4f46e5",
@@ -712,55 +762,70 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
-  narrativeText: { fontSize: "17px", color: T.textMuted, lineHeight: 1.4 },
-  controls: {
+  narrativeText: (isMobile) => ({
+    fontSize: isMobile ? "14px" : "17px",
+    color: T.textMuted,
+    lineHeight: 1.4,
+  }),
+  controls: (isMobile) => ({
     display: "flex",
-    gap: "10px",
+    gap: "8px",
+    flexWrap: "wrap",
     justifyContent: "center",
     paddingBottom: "20px",
-  },
-  btnPrimary: {
+  }),
+  btnPrimary: (isMobile) => ({
     background: T.accent,
     color: "#fff",
     border: "none",
-    padding: "10px 22px",
+    padding: isMobile ? "8px 16px" : "10px 22px",
     borderRadius: "10px",
     fontWeight: 700,
     cursor: "pointer",
-    fontSize: "13px",
-  },
-  btnSecondary: {
+    fontSize: isMobile ? "12px" : "13px",
+  }),
+  btnSecondary: (isMobile) => ({
     background: "rgba(255,255,255,0.03)",
     color: "#fff",
     border: `1px solid ${T.border}`,
-    padding: "10px 18px",
+    padding: isMobile ? "8px 12px" : "10px 18px",
     borderRadius: "10px",
     cursor: "pointer",
-    fontSize: "13px",
-  },
-  footerGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
-  infoCard: {
+    fontSize: isMobile ? "12px" : "13px",
+  }),
+  footerGrid: (isMobile) => ({
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+    gap: "20px",
+  }),
+  infoCard: (isMobile) => ({
     background: T.surface,
-    padding: "18px 24px",
+    padding: isMobile ? "20px" : "18px 24px",
     borderRadius: "16px",
     border: `1px solid ${T.border}`,
-  },
-  footerH2: { color: T.cyan, fontSize: "24px", margin: "0 0 10px 0" },
-  footerP: {
-    fontSize: "14px",
+  }),
+  footerH2: (isMobile) => ({
+    color: T.cyan,
+    fontSize: isMobile ? "22px" : "24px",
+    margin: "0 0 10px 0",
+  }),
+  footerP: (isMobile) => ({
+    fontSize: isMobile ? "13px" : "14px",
     color: T.textMuted,
     lineHeight: "1.5",
     margin: 0,
-  },
-  codeBlock: {
+  }),
+  codeBlock: (isMobile) => ({
     background: "#020617",
-    padding: "15px",
+    padding: isMobile ? "12px" : "15px",
     borderRadius: "12px",
     color: T.cyan,
-    fontSize: "14px",
+    fontSize: isMobile ? "11px" : "14px",
     overflowX: "auto",
     border: `1px solid ${T.border}`,
-  },
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-all",
+  }),
   optBtn: {
     padding: "10px",
     border: `1px solid ${T.border}`,
@@ -770,7 +835,7 @@ const styles = {
     fontSize: "13px",
     textAlign: "left",
   },
-  copyBtn: {
+  copyBtn: (isMobile) => ({
     background: T.border,
     color: "#fff",
     border: "none",
@@ -778,5 +843,5 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "12px",
-  },
+  }),
 };

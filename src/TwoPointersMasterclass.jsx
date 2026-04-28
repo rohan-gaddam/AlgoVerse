@@ -79,8 +79,8 @@ const buildSteps = (arr, target) => {
       phase: "compare",
       explanation: `🔍 COMPARISON:
 
-👉 Left pointer at index ${L} → value ${arr[L]}
-👉 Right pointer at index ${R} → value ${arr[R]}
+👉 Left pointer at index ${L} → value ${arr[L]},
+👉 Right pointer at index ${R} → value ${arr[R]},
 
 We calculate the sum: ${arr[L]} + ${arr[R]} = ${sum}.
 

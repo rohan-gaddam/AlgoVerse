@@ -81,6 +81,17 @@ export default function SelectionSortMasterclass() {
   const autoPlayRef = useRef(null);
   const stateRef = useRef({ arr, i, j, minIdx, phase, stats });
 
+  // Responsiveness State
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = width < 768;
+  const isTablet = width >= 768 && width < 1024;
+
   useEffect(() => {
     stateRef.current = { arr, i, j, minIdx, phase, stats };
   }, [arr, i, j, minIdx, phase, stats]);
@@ -297,35 +308,50 @@ to place the correct element at index ${si}.`;
       style={{
         backgroundColor: T.bg,
         height: "100vh",
-        overflowY: "scroll",
-        scrollSnapType: "y mandatory",
+        overflowY: "auto",
+        scrollSnapType: isMobile ? "none" : "y mandatory",
+        color: T.textMain,
       }}
     >
       {/* 🟢 PAGE 1: VISUALIZER */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           scrollSnapAlign: "start",
           display: "flex",
           flexDirection: "column",
-          padding: "20px 40px",
+          padding: isMobile ? "15px" : "20px 40px",
           boxSizing: "border-box",
         }}
       >
-        <button style={styles.btnBack} onClick={() => navigate("/")}>
-          ← Back
-        </button>
-        <header style={{ textAlign: "center", marginBottom: "10px" }}>
-          <h1 style={styles.title}>AlgoVerse</h1>
-          <div style={{ fontSize: "11px", color: T.textMuted }}>
+        <header
+          style={{
+            position: "relative",
+            textAlign: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <button
+            style={styles.btnBack(isMobile)}
+            onClick={() => navigate("/")}
+          >
+            ← Back
+          </button>
+          <h1 style={styles.title(isMobile)}>AlgoVerse</h1>
+          <div
+            style={{ fontSize: isMobile ? "10px" : "11px", color: T.textMuted }}
+          >
             Selection Sort Mastery Explorer
           </div>
         </header>
 
         <div
           style={{
-            display: "flex",
-            gap: "15px",
+            display: "grid",
+            gridTemplateColumns: isMobile
+              ? "repeat(2, 1fr)"
+              : "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: isMobile ? "10px" : "15px",
             maxWidth: "1000px",
             width: "100%",
             margin: "0 auto 15px",
@@ -335,35 +361,39 @@ to place the correct element at index ${si}.`;
             label="COMPARISONS"
             value={stats.cmp}
             color={T.cyan}
-            sub="Total Logic Checks"
+            sub="Logic Checks"
+            isMobile={isMobile}
           />
           <StatBox
             label="SWAPS"
             value={stats.swp}
             color={T.pink}
-            sub="Elements Placed"
+            sub="Placed"
+            isMobile={isMobile}
           />
           <StatBox
             label="MIN INDEX"
             value={minIdx}
             color={T.orange}
-            sub={`Value: ${arr[minIdx]}`}
+            sub={`Val: ${arr[minIdx]}`}
+            isMobile={isMobile}
           />
           <StatBox
             label="ACTIVE (i)"
             value={i}
             color={T.purple}
-            sub={`Target Slot`}
+            sub={`Slot`}
+            isMobile={isMobile}
           />
         </div>
 
-        <div style={styles.canvas}>
+        <div style={styles.canvas(isMobile)}>
           <div
             style={{
               display: "flex",
               alignItems: "flex-end",
-              gap: "8px",
-              height: "180px",
+              gap: isMobile ? "4px" : "8px",
+              height: isMobile ? "140px" : "180px",
             }}
           >
             {arr.map((val, idx) => {
@@ -378,12 +408,14 @@ to place the correct element at index ${si}.`;
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
+                    flex: 1,
                   }}
                 >
                   <div
                     style={{
-                      width: "35px",
-                      height: `${val * 1.8}px`,
+                      width: "100%",
+                      maxWidth: isMobile ? "20px" : "35px",
+                      height: `${val * (isMobile ? 1.2 : 1.8)}px`,
                       background:
                         phase === "done"
                           ? T.green
@@ -404,7 +436,7 @@ to place the correct element at index ${si}.`;
                   >
                     <span
                       style={{
-                        fontSize: "10px",
+                        fontSize: isMobile ? "8px" : "10px",
                         fontWeight: 800,
                         marginTop: "-15px",
                       }}
@@ -414,7 +446,7 @@ to place the correct element at index ${si}.`;
                   </div>
                   <div
                     style={{
-                      fontSize: "10px",
+                      fontSize: isMobile ? "8px" : "10px",
                       marginTop: "6px",
                       fontWeight: "bold",
                       color: isMin
@@ -434,7 +466,7 @@ to place the correct element at index ${si}.`;
           </div>
         </div>
 
-        <div style={styles.narrativeBox}>
+        <div style={styles.narrativeBox(isMobile)}>
           <div style={styles.narrativeHeader}>
             <span>
               {quiz.active
@@ -443,7 +475,7 @@ to place the correct element at index ${si}.`;
                   ? "RESULT"
                   : "LIVE LOGIC INTERPRETER"}
             </span>
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               {!quiz.active && !quiz.finished && (
                 <button
                   onClick={() => setQuiz({ ...quiz, active: true })}
@@ -461,22 +493,21 @@ to place the correct element at index ${si}.`;
               </span>
             </div>
           </div>
-          <div style={styles.narrativeText}>
+          <div style={styles.narrativeText(isMobile)}>
             {quiz.finished ? (
               <div style={{ textAlign: "center" }}>
-                <h2 style={{ color: T.green, margin: 0 }}>
+                <h2
+                  style={{
+                    color: T.green,
+                    margin: 0,
+                    fontSize: isMobile ? "20px" : "24px",
+                  }}
+                >
                   🏆 MASTERY: {quiz.score}%
                 </h2>
-                <p style={{ fontSize: "16px", margin: "5px 0" }}>
-                  Selection Sort concepts unlocked.
-                </p>
                 <button
                   onClick={() => setQuiz({ ...quiz, finished: false })}
-                  style={{
-                    ...styles.btnSecondary,
-                    height: "30px",
-                    padding: "0 15px",
-                  }}
+                  style={styles.btnSecondary(isMobile)}
                 >
                   View Algorithm
                 </button>
@@ -484,34 +515,34 @@ to place the correct element at index ${si}.`;
             ) : quiz.active ? (
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 2fr",
-                  gap: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
                 }}
               >
-                <div style={{ fontSize: "16px" }}>
+                <div style={{ fontSize: isMobile ? "14px" : "16px" }}>
                   {SELECTION_QUIZ[quiz.step].q}
                 </div>
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                     gap: "8px",
                   }}
                 >
-                  {SELECTION_QUIZ[quiz.step].options.map((opt, i) => {
-                    const isCorrect = i === SELECTION_QUIZ[quiz.step].correct;
+                  {SELECTION_QUIZ[quiz.step].options.map((opt, idx) => {
+                    const isCorrect = idx === SELECTION_QUIZ[quiz.step].correct;
                     const showFeedback = quiz.selectedIdx !== null;
                     return (
                       <button
-                        key={i}
-                        onClick={() => handleAnswer(i)}
+                        key={idx}
+                        onClick={() => handleAnswer(idx)}
                         style={{
                           ...styles.optBtn,
                           background: showFeedback
                             ? isCorrect
                               ? T.green
-                              : quiz.selectedIdx === i
+                              : quiz.selectedIdx === idx
                                 ? T.pink
                                 : "#111827"
                             : "#111827",
@@ -529,9 +560,9 @@ to place the correct element at index ${si}.`;
           </div>
         </div>
 
-        <div style={styles.controls}>
+        <div style={styles.controls(isMobile)}>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               if (history.length > 0) {
                 const prev = history[history.length - 1];
@@ -547,19 +578,14 @@ to place the correct element at index ${si}.`;
           >
             Undo
           </button>
-          <button style={styles.btnPrimary} onClick={doStep}>
-            Next Step ▶
+          <button style={styles.btnPrimary(isMobile)} onClick={doStep}>
+            Next ▶
           </button>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               const newMute = !isMuted;
-
-              if (newMute) {
-                // ❗ STOP speech immediately when muting
-                window.speechSynthesis.cancel();
-              }
-
+              if (newMute) window.speechSynthesis.cancel();
               setIsMuted(newMute);
             }}
           >
@@ -567,14 +593,14 @@ to place the correct element at index ${si}.`;
           </button>
           <button
             style={{
-              ...styles.btnPrimary,
+              ...styles.btnPrimary(isMobile),
               backgroundColor: isPlaying ? T.pink : T.accent,
             }}
             onClick={() => setIsPlaying(!isPlaying)}
           >
-            {isPlaying ? "Pause" : "Auto Play"}
+            {isPlaying ? "Pause" : "Auto"}
           </button>
-          <button style={styles.btnSecondary} onClick={handleReset}>
+          <button style={styles.btnSecondary(isMobile)} onClick={handleReset}>
             Reset
           </button>
         </div>
@@ -583,57 +609,70 @@ to place the correct element at index ${si}.`;
       {/* 🔵 PAGE 2: INFO & CODE */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           scrollSnapAlign: "start",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          padding: "60px",
+          padding: isMobile ? "40px 20px" : "60px",
           boxSizing: "border-box",
+          gap: "30px",
         }}
       >
-        <div style={styles.footerGrid}>
-          <div style={styles.infoCard}>
+        <div style={styles.footerGrid(isMobile)}>
+          <div style={styles.infoCard(isMobile)}>
             <h2
-              style={{ color: T.cyan, fontSize: "32px", marginBottom: "20px" }}
+              style={{
+                color: T.cyan,
+                fontSize: isMobile ? "24px" : "32px",
+                marginBottom: "15px",
+              }}
             >
               How it Works
             </h2>
-            <p style={styles.footerP}>
+            <p style={styles.footerP(isMobile)}>
               Selection Sort divides the array into a sorted and unsorted part.
               It repeatedly picks the absolute minimum from the unsorted section
-              and swaps it with the first unsorted element, effectively growing
-              the sorted portion one element at a time.
+              and swaps it with the first unsorted element.
             </p>
           </div>
-          <div style={styles.infoCard}>
+          <div style={styles.infoCard(isMobile)}>
             <h2
-              style={{ color: "#fff", fontSize: "32px", marginBottom: "20px" }}
+              style={{
+                color: "#fff",
+                fontSize: isMobile ? "24px" : "32px",
+                marginBottom: "15px",
+              }}
             >
-              Computational Cost
+              Cost
             </h2>
-            <p style={styles.footerP}>
-              <strong>Time Complexity:</strong> O(N²) — It always performs
-              N(N-1)/2 comparisons, even if sorted.
+            <p style={styles.footerP(isMobile)}>
+              <strong>Time:</strong> O(N²) — Constant N(N-1)/2 comparisons.
               <br />
-              <br />
-              <strong>Space Complexity:</strong> O(1) — Only a few pointers are
-              stored.
+              <strong>Space:</strong> O(1) — In-place swap logic.
             </p>
           </div>
         </div>
-        <div style={{ ...styles.infoCard, marginTop: "40px" }}>
+
+        <div style={styles.infoCard(isMobile)}>
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               justifyContent: "space-between",
+              gap: "10px",
               marginBottom: "20px",
             }}
           >
-            <h2 style={{ color: T.pink, fontSize: "24px", margin: 0 }}>
+            <h2
+              style={{
+                color: T.pink,
+                fontSize: isMobile ? "20px" : "24px",
+                margin: 0,
+              }}
+            >
               Implementation
             </h2>
-            <div style={{ display: "flex", gap: "20px" }}>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
               {["Java", "Python", "C++", "C"].map((l) => (
                 <span
                   key={l}
@@ -643,6 +682,7 @@ to place the correct element at index ${si}.`;
                     fontWeight: 800,
                     cursor: "pointer",
                     opacity: activeLang === l ? 1 : 0.5,
+                    fontSize: isMobile ? "12px" : "14px",
                   }}
                 >
                   {l}
@@ -654,13 +694,13 @@ to place the correct element at index ${si}.`;
                   setCopyStatus("Copied!");
                   setTimeout(() => setCopyStatus("Copy"), 2000);
                 }}
-                style={styles.copyBtn}
+                style={styles.copyBtn(isMobile)}
               >
                 {copyStatus}
               </button>
             </div>
           </div>
-          <pre style={styles.codeBlock}>
+          <pre style={styles.codeBlock(isMobile)}>
             <code>{codeSnippets[activeLang]}</code>
           </pre>
         </div>
@@ -669,11 +709,10 @@ to place the correct element at index ${si}.`;
   );
 }
 
-const StatBox = ({ label, value, color, sub }) => (
+const StatBox = ({ label, value, color, sub, isMobile }) => (
   <div
     style={{
-      flex: 1,
-      padding: "12px 20px",
+      padding: isMobile ? "10px" : "12px 20px",
       borderRadius: "12px",
       border: `1px solid ${T.border}`,
       borderTop: `3px solid ${color}`,
@@ -682,24 +721,31 @@ const StatBox = ({ label, value, color, sub }) => (
   >
     <div
       style={{
-        fontSize: "10px",
+        fontSize: isMobile ? "8px" : "10px",
         fontWeight: 700,
         color: T.textMuted,
-        marginBottom: "6px",
+        marginBottom: "4px",
       }}
     >
       {label}
     </div>
-    <div style={{ fontSize: "24px", fontWeight: 800 }}>{value}</div>
-    <div style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)" }}>
+    <div style={{ fontSize: isMobile ? "18px" : "24px", fontWeight: 800 }}>
+      {value}
+    </div>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "10px",
+        color: "rgba(255,255,255,0.4)",
+      }}
+    >
       {sub}
     </div>
   </div>
 );
 
 const styles = {
-  btnBack: {
-    position: "absolute",
+  btnBack: (isMobile) => ({
+    position: isMobile ? "static" : "absolute",
     left: "40px",
     top: "25px",
     background: "transparent",
@@ -708,17 +754,19 @@ const styles = {
     padding: "6px 12px",
     borderRadius: "6px",
     cursor: "pointer",
-  },
-  title: {
-    fontSize: "3rem",
+    marginBottom: isMobile ? "10px" : "0",
+  }),
+  title: (isMobile) => ({
+    fontSize: isMobile ? "2rem" : "3rem",
     fontWeight: "900",
     margin: 0,
     background: "linear-gradient(to right, #10b981, #3b82f6, #6366f1)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-  },
-  canvas: {
-    flex: 1,
+  }),
+  canvas: (isMobile) => ({
+    flex: isMobile ? "none" : 1,
+    height: isMobile ? "200px" : "auto",
     maxHeight: "220px",
     margin: "15px 0",
     background: "rgba(13,17,28,0.3)",
@@ -727,22 +775,23 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-  },
-  narrativeBox: {
+    padding: "10px",
+  }),
+  narrativeBox: (isMobile) => ({
     background: T.surface,
     borderRadius: "12px",
-    padding: "15px 25px",
+    padding: isMobile ? "15px" : "15px 25px",
     border: `1px solid ${T.border}`,
     marginBottom: "15px",
-    minHeight: "120px",
-  },
+    minHeight: isMobile ? "140px" : "120px",
+  }),
   narrativeHeader: {
     display: "flex",
     justifyContent: "space-between",
     color: "#818cf8",
     fontSize: "10px",
     fontWeight: 800,
-    marginBottom: "8px",
+    marginBottom: "12px",
   },
   phaseTag: {
     background: "#4f46e5",
@@ -755,76 +804,83 @@ const styles = {
     border: "none",
     color: "#fff",
     borderRadius: "4px",
-    padding: "2px 6px",
-    fontSize: "9px",
+    padding: "2px 8px",
+    fontSize: "10px",
     fontWeight: "bold",
     cursor: "pointer",
   },
-  narrativeText: {
-    fontSize: "18px",
+  narrativeText: (isMobile) => ({
+    fontSize: isMobile ? "14px" : "18px",
     color: T.textMuted,
     lineHeight: 1.4,
     margin: 0,
-  },
-  controls: {
+  }),
+  controls: (isMobile) => ({
     display: "flex",
-    gap: "10px",
+    gap: "8px",
+    flexWrap: "wrap",
     justifyContent: "center",
     alignItems: "center",
     paddingBottom: "20px",
-  },
-  btnPrimary: {
+  }),
+  btnPrimary: (isMobile) => ({
     background: T.accent,
     color: "#fff",
     border: "none",
-    padding: "10px 22px",
+    padding: isMobile ? "8px 16px" : "10px 22px",
     borderRadius: "8px",
     fontWeight: 700,
     cursor: "pointer",
-    fontSize: "13px",
-  },
-  btnSecondary: {
+    fontSize: isMobile ? "12px" : "13px",
+  }),
+  btnSecondary: (isMobile) => ({
     background: "rgba(255,255,255,0.03)",
     color: "#fff",
     border: `1px solid ${T.border}`,
-    padding: "10px 18px",
+    padding: isMobile ? "8px 12px" : "10px 18px",
     borderRadius: "8px",
     cursor: "pointer",
-    fontSize: "13px",
-  },
-  footerGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "30px" },
-  infoCard: {
+    fontSize: isMobile ? "12px" : "13px",
+  }),
+  footerGrid: (isMobile) => ({
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+    gap: "20px",
+  }),
+  infoCard: (isMobile) => ({
     background: T.surface,
-    padding: "30px",
+    padding: isMobile ? "20px" : "30px",
     borderRadius: "16px",
     border: `1px solid ${T.border}`,
-  },
-  footerP: {
-    fontSize: "15px",
+  }),
+  footerP: (isMobile) => ({
+    fontSize: isMobile ? "13px" : "15px",
     color: T.textMuted,
     lineHeight: "1.6",
     margin: 0,
-  },
-  codeBlock: {
+  }),
+  codeBlock: (isMobile) => ({
     background: "#020617",
-    padding: "20px",
+    padding: isMobile ? "12px" : "20px",
     borderRadius: "12px",
     color: T.cyan,
-    fontSize: "14px",
+    fontSize: isMobile ? "11px" : "14px",
     overflowX: "auto",
     border: `1px solid ${T.border}`,
-  },
-  copyBtn: {
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-all",
+  }),
+  copyBtn: (isMobile) => ({
     background: T.border,
     color: "#fff",
     border: "none",
-    padding: "6px 12px",
+    padding: "4px 10px",
     borderRadius: "6px",
     cursor: "pointer",
-    fontSize: "12px",
-  },
+    fontSize: "11px",
+  }),
   optBtn: {
-    padding: "8px",
+    padding: "10px",
     border: `1px solid ${T.border}`,
     color: "#fff",
     borderRadius: "6px",

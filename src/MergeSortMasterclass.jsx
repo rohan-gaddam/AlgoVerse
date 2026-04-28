@@ -86,6 +86,16 @@ export default function MergeSortMasterclass() {
   const autoPlayRef = useRef(null);
   const stateRef = useRef({ array, stack, phase, stats, activeRange });
 
+  // Responsiveness State
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = width < 768;
+
   useEffect(() => {
     stateRef.current = { array, stack, phase, stats, activeRange };
   }, [array, stack, phase, stats, activeRange]);
@@ -193,6 +203,16 @@ The array has been completely sorted from smallest to largest.`);
 
     if (!isPlaying) speak(exp);
   }, [isPlaying, isMuted]);
+
+  useEffect(() => {
+    if (isPlaying && phase !== "done") {
+      autoPlayRef.current = setInterval(doStep, 2000);
+    } else {
+      clearInterval(autoPlayRef.current);
+    }
+    return () => clearInterval(autoPlayRef.current);
+  }, [isPlaying, phase, doStep]);
+
   const handleReset = () => {
     setArray(generateArray());
     setStack([{ left: 0, right: 13, step: "split" }]);
@@ -225,75 +245,94 @@ The array has been completely sorted from smallest to largest.`);
       style={{
         backgroundColor: T.bg,
         height: "100vh",
-        overflowY: "scroll",
-        scrollSnapType: "y mandatory",
+        overflowY: "auto",
+        scrollSnapType: isMobile ? "none" : "y mandatory",
+        color: T.textMain,
       }}
     >
       {/* 🟢 PAGE 1 */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          padding: "15px 40px",
+          padding: isMobile ? "15px" : "20px 40px",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
-          overflow: "hidden",
-          justifyContent: "space-between",
         }}
       >
-        <button style={styles.btnBack} onClick={() => navigate("/")}>
-          ← Back
-        </button>
-        <header style={{ textAlign: "center" }}>
-          <h1 style={styles.title}>AlgoVerse</h1>
-          <div style={{ fontSize: "11px", color: T.textMuted }}>
+        <header
+          style={{
+            position: "relative",
+            textAlign: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <button
+            style={styles.btnBack(isMobile)}
+            onClick={() => navigate("/")}
+          >
+            ← Back
+          </button>
+          <h1 style={styles.title(isMobile)}>AlgoVerse</h1>
+          <div
+            style={{ fontSize: isMobile ? "10px" : "11px", color: T.textMuted }}
+          >
             Merge Sort Mastery
           </div>
         </header>
 
         <div
           style={{
-            display: "flex",
-            gap: "10px",
+            display: "grid",
+            gridTemplateColumns: isMobile
+              ? "repeat(2, 1fr)"
+              : "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: isMobile ? "10px" : "15px",
             maxWidth: "1000px",
             width: "100%",
-            margin: "0 auto",
+            margin: "0 auto 15px",
           }}
         >
           <StatBox
             label="COMPARISONS"
             value={stats.cmp}
             color={T.cyan}
-            desc="Checks"
+            desc="Logic Checks"
+            isMobile={isMobile}
           />
           <StatBox
             label="SPLITS"
             value={stats.split}
             color={T.purple}
             desc="Divides"
+            isMobile={isMobile}
           />
           <StatBox
             label="MERGES"
             value={stats.merge}
             color={T.green}
             desc="Combines"
+            isMobile={isMobile}
           />
           <StatBox
             label="STACK"
             value={stack.length}
             color={T.orange}
             desc="Pending"
+            isMobile={isMobile}
           />
         </div>
 
-        <div style={styles.canvas}>
+        <div style={styles.canvas(isMobile)}>
           <div
             style={{
               display: "flex",
               alignItems: "flex-end",
-              gap: "8px",
-              height: "180px",
+              justifyContent: "center",
+              gap: isMobile ? "4px" : "12px",
+              height: isMobile ? "150px" : "200px",
+              width: "100%",
             }}
           >
             {array.map((val, idx) => {
@@ -310,8 +349,8 @@ The array has been completely sorted from smallest to largest.`);
                 >
                   <div
                     style={{
-                      width: "38px",
-                      height: `${val * 2}px`,
+                      width: isMobile ? "18px" : "45px", // FIXED: Width for desktop
+                      height: `${val * (isMobile ? 1.4 : 2.2)}px`,
                       backgroundColor:
                         phase === "done"
                           ? T.green
@@ -321,11 +360,12 @@ The array has been completely sorted from smallest to largest.`);
                       borderRadius: "4px 4px 0 0",
                       border: `1px solid ${isActive ? "#fff" : T.border}`,
                       opacity: isActive || phase === "done" ? 1 : 0.3,
+                      transition: "0.3s",
                     }}
                   />
                   <div
                     style={{
-                      fontSize: "10px",
+                      fontSize: isMobile ? "8px" : "11px",
                       marginTop: "6px",
                       color: isActive ? T.purple : T.textMuted,
                     }}
@@ -338,10 +378,10 @@ The array has been completely sorted from smallest to largest.`);
           </div>
         </div>
 
-        <div style={styles.narrativeBox}>
+        <div style={styles.narrativeBox(isMobile)}>
           <div style={styles.narrativeHeader}>
             <span>LIVE LOGIC INTERPRETER</span>
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               {!quiz.active && !quiz.finished && (
                 <button
                   onClick={() => setQuiz({ ...quiz, active: true })}
@@ -353,26 +393,32 @@ The array has been completely sorted from smallest to largest.`);
               <span style={styles.phaseTag}>{phase.toUpperCase()}</span>
             </div>
           </div>
-          <div style={styles.narrativeText}>
+          <div style={styles.narrativeText(isMobile)}>
             {quiz.finished ? (
-              <div style={{ textAlign: "center", color: T.green }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  color: T.green,
+                  fontSize: isMobile ? "20px" : "24px",
+                }}
+              >
                 🏆 MASTERY ACHIEVED: {quiz.score}%
               </div>
             ) : quiz.active ? (
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
                 }}
               >
-                <div style={{ fontSize: "16px" }}>
+                <div style={{ fontSize: isMobile ? "14px" : "18px" }}>
                   {MERGE_QUIZ[quiz.step].q}
                 </div>
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                     gap: "10px",
                   }}
                 >
@@ -401,10 +447,9 @@ The array has been completely sorted from smallest to largest.`);
           </div>
         </div>
 
-        {/* 🛠️ BUTTONS ROW - STRICTLY INCLUDED */}
-        <div style={styles.controls}>
+        <div style={styles.controls(isMobile)}>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               if (history.length > 0) {
                 const p = history.pop();
@@ -418,19 +463,14 @@ The array has been completely sorted from smallest to largest.`);
           >
             Undo
           </button>
-          <button style={styles.btnPrimary} onClick={doStep}>
-            Next Step ▶
+          <button style={styles.btnPrimary(isMobile)} onClick={doStep}>
+            Next ▶
           </button>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               const newMute = !isMuted;
-
-              if (newMute) {
-                // ❗ STOP speech immediately when muting
-                window.speechSynthesis.cancel();
-              }
-
+              if (newMute) window.speechSynthesis.cancel();
               setIsMuted(newMute);
             }}
           >
@@ -438,14 +478,14 @@ The array has been completely sorted from smallest to largest.`);
           </button>
           <button
             style={{
-              ...styles.btnPrimary,
+              ...styles.btnPrimary(isMobile),
               background: isPlaying ? T.pink : T.accent,
             }}
             onClick={() => setIsPlaying(!isPlaying)}
           >
-            {isPlaying ? "Pause" : "Auto Play"}
+            {isPlaying ? "Pause" : "Auto"}
           </button>
-          <button style={styles.btnSecondary} onClick={handleReset}>
+          <button style={styles.btnSecondary(isMobile)} onClick={handleReset}>
             Reset
           </button>
         </div>
@@ -454,39 +494,49 @@ The array has been completely sorted from smallest to largest.`);
       {/* 🔵 PAGE 2 */}
       <section
         style={{
-          height: "100vh",
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          padding: "60px",
+          padding: isMobile ? "40px 20px" : "60px",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
+          gap: "30px",
+          justifyContent: "center",
         }}
       >
-        <div style={styles.footerGrid}>
-          <div style={styles.infoCard}>
-            <h2 style={styles.footerH2}>How it Works</h2>
-            <p style={styles.footerP}>
-              Merge Sort split the data until single elements remain, then
-              merges them back in sorted pairs.
+        <div style={styles.footerGrid(isMobile)}>
+          <div style={styles.infoCard(isMobile)}>
+            <h2 style={styles.footerH2(isMobile)}>How it Works</h2>
+            <p style={styles.footerP(isMobile)}>
+              Merge Sort splits the data until single elements remain, then
+              merges them back in sorted pairs using the divide and conquer
+              strategy.
             </p>
           </div>
-          <div style={styles.infoCard}>
-            <h2 style={styles.footerH2}>Costs</h2>
-            <p style={styles.footerP}>Time: O(n log n). Space: O(n).</p>
+          <div style={styles.infoCard(isMobile)}>
+            <h2 style={styles.footerH2(isMobile)}>Efficiency</h2>
+            <p style={styles.footerP(isMobile)}>
+              <b>Time:</b> O(n log n) stable performance.
+              <br />
+              <b>Space:</b> O(n) auxiliary memory.
+            </p>
           </div>
         </div>
-        <div style={{ ...styles.infoCard, marginTop: "30px" }}>
+        <div style={styles.infoCard(isMobile)}>
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               justifyContent: "space-between",
               alignItems: "center",
               marginBottom: "15px",
+              gap: "10px",
             }}
           >
-            <h2 style={{ color: T.pink, fontSize: "24px" }}>Implementation</h2>
-            <div style={{ display: "flex", gap: "15px" }}>
+            <h2 style={{ color: T.pink, fontSize: isMobile ? "20px" : "24px" }}>
+              Implementation
+            </h2>
+            <div style={{ display: "flex", gap: "12px" }}>
               {["Java", "Python", "C++"].map((l) => (
                 <span
                   key={l}
@@ -495,22 +545,26 @@ The array has been completely sorted from smallest to largest.`);
                     color: activeLang === l ? T.cyan : "#fff",
                     fontWeight: 800,
                     cursor: "pointer",
+                    opacity: activeLang === l ? 1 : 0.5,
+                    fontSize: isMobile ? "12px" : "14px",
                   }}
                 >
                   {l}
                 </span>
               ))}
               <button
-                style={styles.copyBtn}
-                onClick={() =>
-                  navigator.clipboard.writeText(codeSnippets[activeLang])
-                }
+                style={styles.copyBtn(isMobile)}
+                onClick={() => {
+                  navigator.clipboard.writeText(codeSnippets[activeLang]);
+                  setCopyStatus("Copied!");
+                  setTimeout(() => setCopyStatus("Copy"), 2000);
+                }}
               >
                 {copyStatus}
               </button>
             </div>
           </div>
-          <pre style={styles.codeBlock}>
+          <pre style={styles.codeBlock(isMobile)}>
             <code>{codeSnippets[activeLang]}</code>
           </pre>
         </div>
@@ -519,30 +573,42 @@ The array has been completely sorted from smallest to largest.`);
   );
 }
 
-const StatBox = ({ label, value, color, desc }) => (
+const StatBox = ({ label, value, color, desc, isMobile }) => (
   <div
     style={{
-      flex: 1,
-      padding: "12px 15px",
+      padding: isMobile ? "10px" : "12px 15px",
       borderRadius: "12px",
       border: `1px solid ${T.border}`,
       borderTop: `3px solid ${color}`,
       background: T.surface,
     }}
   >
-    <div style={{ fontSize: "9px", fontWeight: 700, color: T.textMuted }}>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "9px",
+        fontWeight: 700,
+        color: T.textMuted,
+      }}
+    >
       {label}
     </div>
-    <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
-    <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.3)" }}>
+    <div style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: 800 }}>
+      {value}
+    </div>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "9px",
+        color: "rgba(255,255,255,0.3)",
+      }}
+    >
       {desc}
     </div>
   </div>
 );
 
 const styles = {
-  btnBack: {
-    position: "absolute",
+  btnBack: (isMobile) => ({
+    position: isMobile ? "static" : "absolute",
     left: "40px",
     top: "25px",
     background: "transparent",
@@ -551,18 +617,19 @@ const styles = {
     padding: "6px 12px",
     borderRadius: "6px",
     cursor: "pointer",
-  },
-  title: {
-    fontSize: "3rem",
+    marginBottom: isMobile ? "10px" : "0",
+  }),
+  title: (isMobile) => ({
+    fontSize: isMobile ? "2rem" : "3.5rem",
     fontWeight: "900",
     margin: 0,
     background: "linear-gradient(90deg, #10b981, #6366f1)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-  },
-  canvas: {
-    flexGrow: 1,
-    maxHeight: "240px",
+  }),
+  canvas: (isMobile) => ({
+    flex: 1,
+    minHeight: isMobile ? "220px" : "260px",
     margin: "15px 0",
     background: "rgba(13,17,28,0.3)",
     borderRadius: "20px",
@@ -570,22 +637,24 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-  },
-  narrativeBox: {
+    padding: "20px",
+    overflowX: "auto",
+  }),
+  narrativeBox: (isMobile) => ({
     background: T.surface,
     borderRadius: "12px",
-    padding: "15px 30px",
+    padding: isMobile ? "15px" : "15px 30px",
     border: `1px solid ${T.border}`,
     marginBottom: "15px",
-    minHeight: "120px",
-  },
+    minHeight: isMobile ? "140px" : "120px",
+  }),
   narrativeHeader: {
     display: "flex",
     justifyContent: "space-between",
     color: "#818cf8",
     fontSize: "11px",
     fontWeight: 800,
-    marginBottom: "8px",
+    marginBottom: "12px",
   },
   phaseTag: {
     background: "#10b981",
@@ -603,55 +672,70 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
-  narrativeText: { fontSize: "17px", color: T.textMuted, lineHeight: 1.4 },
-  controls: {
+  narrativeText: (isMobile) => ({
+    fontSize: isMobile ? "14px" : "17px",
+    color: T.textMuted,
+    lineHeight: 1.4,
+  }),
+  controls: (isMobile) => ({
     display: "flex",
-    gap: "10px",
+    gap: "8px",
+    flexWrap: "wrap",
     justifyContent: "center",
     paddingBottom: "20px",
-  },
-  btnPrimary: {
+  }),
+  btnPrimary: (isMobile) => ({
     background: T.accent,
     color: "#fff",
     border: "none",
-    padding: "10px 22px",
+    padding: isMobile ? "8px 16px" : "10px 22px",
     borderRadius: "10px",
     fontWeight: 700,
     cursor: "pointer",
-    fontSize: "13px",
-  },
-  btnSecondary: {
+    fontSize: isMobile ? "12px" : "13px",
+  }),
+  btnSecondary: (isMobile) => ({
     background: "rgba(255,255,255,0.03)",
     color: "#fff",
     border: `1px solid ${T.border}`,
-    padding: "10px 18px",
+    padding: isMobile ? "8px 12px" : "10px 18px",
     borderRadius: "10px",
     cursor: "pointer",
-    fontSize: "13px",
-  },
-  footerGrid: { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" },
-  infoCard: {
+    fontSize: isMobile ? "12px" : "13px",
+  }),
+  footerGrid: (isMobile) => ({
+    display: "grid",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+    gap: "20px",
+  }),
+  infoCard: (isMobile) => ({
     background: T.surface,
-    padding: "20px 30px",
+    padding: isMobile ? "20px" : "20px 30px",
     borderRadius: "16px",
     border: `1px solid ${T.border}`,
-  },
-  footerH2: { color: T.cyan, fontSize: "24px", margin: "0 0 10px 0" },
-  footerP: {
-    fontSize: "14px",
+  }),
+  footerH2: (isMobile) => ({
+    color: T.cyan,
+    fontSize: isMobile ? "22px" : "24px",
+    margin: "0 0 10px 0",
+  }),
+  footerP: (isMobile) => ({
+    fontSize: isMobile ? "13px" : "14px",
     color: T.textMuted,
     lineHeight: "1.5",
     margin: 0,
-  },
-  codeBlock: {
+  }),
+  codeBlock: (isMobile) => ({
     background: "#020617",
-    padding: "15px",
+    padding: isMobile ? "12px" : "15px",
     borderRadius: "12px",
     color: T.cyan,
-    fontSize: "14px",
+    fontSize: isMobile ? "11px" : "14px",
     overflowX: "auto",
     border: `1px solid ${T.border}`,
-  },
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-all",
+  }),
   optBtn: {
     padding: "10px",
     background: "#111827",
@@ -659,9 +743,10 @@ const styles = {
     color: "#fff",
     borderRadius: "8px",
     cursor: "pointer",
-    fontSize: "13px",
+    fontSize: "12px",
+    textAlign: "left",
   },
-  copyBtn: {
+  copyBtn: (isMobile) => ({
     background: T.border,
     color: "#fff",
     border: "none",
@@ -669,5 +754,5 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "12px",
-  },
+  }),
 };

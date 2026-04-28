@@ -80,6 +80,16 @@ export default function BinarySearchMasterclass() {
   const autoPlayRef = useRef(null);
   const current = steps[stepIdx] || null;
 
+  // Responsiveness State
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = width < 768;
+
   const cleanText = (text) => {
     return text
       .replace(/👉|🔵|🔍|➡️|⬅️|🎯|❌/g, "")
@@ -247,6 +257,7 @@ and ${val} does not exist in the array.`,
 
     return s;
   };
+
   const handleNext = () => {
     if (stepIdx === -1) {
       const val = parseInt(targetInput) || arr[Math.floor(arr.length / 2)];
@@ -333,7 +344,8 @@ and ${val} does not exist in the array.`,
         backgroundColor: T.bg,
         minHeight: "100vh",
         overflowY: "auto",
-        scrollSnapType: "y mandatory",
+        scrollSnapType: isMobile ? "none" : "y mandatory",
+        color: T.textMain,
       }}
     >
       {/* 🟢 PAGE 1 */}
@@ -342,21 +354,31 @@ and ${val} does not exist in the array.`,
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          padding: "clamp(10px, 3vw, 20px) clamp(12px, 5vw, 40px)",
+          padding: isMobile ? "15px" : "20px 40px",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
-          overflow: "visible",
-          justifyContent: "space-between",
         }}
       >
-        <button style={styles.btnBack} onClick={() => navigate("/")}>
-          ← Back
-        </button>
-
-        <header style={{ textAlign: "center" }}>
-          <h1 style={styles.title}>AlgoVerse</h1>
+        <header
+          style={{
+            position: "relative",
+            textAlign: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <button
+            style={styles.btnBack(isMobile)}
+            onClick={() => navigate("/")}
+          >
+            ← Back
+          </button>
+          <h1 style={styles.title(isMobile)}>AlgoVerse</h1>
           <div
-            style={{ fontSize: "11px", color: T.textMuted, marginTop: "8px" }}
+            style={{
+              fontSize: isMobile ? "10px" : "11px",
+              color: T.textMuted,
+              marginTop: "8px",
+            }}
           >
             Binary Search Ultimate Explorer
           </div>
@@ -364,47 +386,55 @@ and ${val} does not exist in the array.`,
 
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "clamp(8px, 2vw, 15px)",
+            display: "grid",
+            gridTemplateColumns: isMobile
+              ? "repeat(2, 1fr)"
+              : "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: isMobile ? "10px" : "15px",
             maxWidth: "1000px",
             width: "100%",
-            margin: "0 auto",
+            margin: "0 auto 15px",
           }}
         >
           <StatBox
             label="COMPARISONS"
             value={current?.stats.comparisons || 0}
             color={T.cyan}
-            desc="Logic Checks"
+            desc="Checks"
+            isMobile={isMobile}
           />
           <StatBox
             label="SEARCH RANGE"
             value={current?.stats.range || arr.length}
             color={T.pink}
-            desc="Elements Remaining"
+            desc="Remaining"
+            isMobile={isMobile}
           />
           <StatBox
             label="CURRENT MID"
             value={current?.stats.midVal || "-"}
             color={T.yellow}
-            desc="Midpoint Value"
+            desc="Mid Value"
+            isMobile={isMobile}
           />
           <StatBox
-            label="TARGET VALUE"
+            label="TARGET"
             value={target || "?"}
             color={T.purple}
-            desc="Goal Search"
+            desc="Goal"
+            isMobile={isMobile}
           />
         </div>
 
-        <div style={styles.canvas}>
+        <div style={styles.canvas(isMobile)}>
           <div
             style={{
               display: "flex",
               alignItems: "flex-end",
-              gap: "clamp(4px, 1.5vw, 10px)",
-              height: "clamp(120px, 30vw, 180px)",
+              justifyContent: "center",
+              gap: isMobile ? "4px" : "12px",
+              height: isMobile ? "150px" : "200px",
+              width: "100%",
             }}
           >
             {arr.map((val, idx) => {
@@ -423,8 +453,8 @@ and ${val} does not exist in the array.`,
                 >
                   <div
                     style={{
-                      width: "clamp(16px, 5vw, 42px)",
-                      height: `${val * 1.5}px`,
+                      width: isMobile ? "18px" : "45px", // FIXED: Width for desktop
+                      height: `${val * (isMobile ? 1.3 : 2.0)}px`,
                       backgroundColor: isFound
                         ? T.green
                         : isMid
@@ -440,7 +470,7 @@ and ${val} does not exist in the array.`,
                   />
                   <div
                     style={{
-                      fontSize: "10px",
+                      fontSize: isMobile ? "8px" : "10px",
                       marginTop: "6px",
                       fontWeight: "bold",
                       color: isFound ? T.green : isMid ? T.yellow : T.textMuted,
@@ -454,7 +484,7 @@ and ${val} does not exist in the array.`,
           </div>
         </div>
 
-        <div style={styles.narrativeBox}>
+        <div style={styles.narrativeBox(isMobile)}>
           <div style={styles.narrativeHeader}>
             <span>
               {quiz.active ? "MASTERY CHALLENGE" : "LIVE LOGIC INTERPRETER"}
@@ -473,26 +503,32 @@ and ${val} does not exist in the array.`,
               </span>
             </div>
           </div>
-          <div style={styles.narrativeText}>
+          <div style={styles.narrativeText(isMobile)}>
             {quiz.finished ? (
-              <div style={{ textAlign: "center", color: T.green }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  color: T.green,
+                  fontSize: isMobile ? "20px" : "24px",
+                }}
+              >
                 🏆 MASTERY ACHIEVED: {quiz.score}%
               </div>
             ) : quiz.active ? (
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  gap: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
                 }}
               >
-                <div style={{ fontSize: "18px" }}>
+                <div style={{ fontSize: isMobile ? "14px" : "18px" }}>
                   {BINARY_QUIZ[quiz.step].q}
                 </div>
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                     gap: "10px",
                   }}
                 >
@@ -521,34 +557,29 @@ and ${val} does not exist in the array.`,
           </div>
         </div>
 
-        <div style={styles.controls}>
+        <div style={styles.controls(isMobile)}>
           <input
             type="number"
             value={targetInput}
             onChange={(e) => setTargetInput(e.target.value)}
-            style={styles.input}
+            style={styles.input(isMobile)}
           />
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               if (stepIdx > 0) setStepIdx(stepIdx - 1);
             }}
           >
             Undo
           </button>
-          <button style={styles.btnPrimary} onClick={handleNext}>
-            Next Step ▶
+          <button style={styles.btnPrimary(isMobile)} onClick={handleNext}>
+            Next ▶
           </button>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               const newMute = !isMuted;
-
-              if (newMute) {
-                // ❗ STOP speech immediately when muting
-                window.speechSynthesis.cancel();
-              }
-
+              if (newMute) window.speechSynthesis.cancel();
               setIsMuted(newMute);
             }}
           >
@@ -556,14 +587,14 @@ and ${val} does not exist in the array.`,
           </button>
           <button
             style={{
-              ...styles.btnPrimary,
+              ...styles.btnPrimary(isMobile),
               background: isPlaying ? T.pink : T.accent,
             }}
             onClick={() => setIsPlaying(!isPlaying)}
           >
-            {isPlaying ? "Pause" : "Auto Play"}
+            {isPlaying ? "Pause" : "Auto"}
           </button>
-          <button style={styles.btnSecondary} onClick={handleReset}>
+          <button style={styles.btnSecondary(isMobile)} onClick={handleReset}>
             Reset
           </button>
         </div>
@@ -575,41 +606,46 @@ and ${val} does not exist in the array.`,
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          padding: "clamp(20px, 5vw, 60px)",
+          padding: isMobile ? "40px 20px" : "60px",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
+          gap: "30px",
+          justifyContent: "center",
         }}
       >
-        <div style={styles.footerGrid}>
-          <div style={styles.infoCard}>
-            <h2 style={styles.footerH2}>How it Works</h2>
-            <p style={styles.footerP}>
+        <div style={styles.footerGrid(isMobile)}>
+          <div style={styles.infoCard(isMobile)}>
+            <h2 style={styles.footerH2(isMobile)}>How it Works</h2>
+            <p style={styles.footerP(isMobile)}>
               Binary Search treats the array as a sorted collection. It
               repeatedly picks the midpoint and compares it to the target,
               eliminating half the search space every single step.
             </p>
           </div>
-          <div style={styles.infoCard}>
-            <h2 style={styles.footerH2}>Cost Efficiency</h2>
-            <p style={styles.footerP}>
+          <div style={styles.infoCard(isMobile)}>
+            <h2 style={styles.footerH2(isMobile)}>Efficiency</h2>
+            <p style={styles.footerP(isMobile)}>
               <b>Time:</b> O(log n) average/worst case.
               <br />
               <b>Space:</b> O(1) iterative approach.
             </p>
           </div>
         </div>
-        <div style={{ ...styles.infoCard, marginTop: "30px" }}>
+        <div style={styles.infoCard(isMobile)}>
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               justifyContent: "space-between",
               alignItems: "center",
               marginBottom: "20px",
+              gap: "10px",
             }}
           >
-            <h2 style={{ color: T.pink, fontSize: "24px" }}>Implementation</h2>
-            <div style={{ display: "flex", gap: "15px" }}>
+            <h2 style={{ color: T.pink, fontSize: isMobile ? "20px" : "24px" }}>
+              Implementation
+            </h2>
+            <div style={{ display: "flex", gap: "12px" }}>
               {["Java", "Python", "C++"].map((l) => (
                 <span
                   key={l}
@@ -619,13 +655,14 @@ and ${val} does not exist in the array.`,
                     fontWeight: 800,
                     cursor: "pointer",
                     opacity: activeLang === l ? 1 : 0.5,
+                    fontSize: isMobile ? "12px" : "14px",
                   }}
                 >
                   {l}
                 </span>
               ))}
               <button
-                style={styles.copyBtn}
+                style={styles.copyBtn(isMobile)}
                 onClick={() => {
                   navigator.clipboard.writeText(codeSnippets[activeLang]);
                   setCopyStatus("Copied!");
@@ -636,7 +673,7 @@ and ${val} does not exist in the array.`,
               </button>
             </div>
           </div>
-          <pre style={styles.codeBlock}>
+          <pre style={styles.codeBlock(isMobile)}>
             <code>{codeSnippets[activeLang]}</code>
           </pre>
         </div>
@@ -645,50 +682,63 @@ and ${val} does not exist in the array.`,
   );
 }
 
-const StatBox = ({ label, value, color, desc }) => (
+const StatBox = ({ label, value, color, desc, isMobile }) => (
   <div
     style={{
-      flex: 1,
-      padding: "12px 15px",
+      padding: isMobile ? "10px" : "12px 15px",
       borderRadius: "12px",
       border: `1px solid ${T.border}`,
       borderTop: `3px solid ${color}`,
       background: T.surface,
     }}
   >
-    <div style={{ fontSize: "10px", fontWeight: 700, color: T.textMuted }}>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "10px",
+        fontWeight: 700,
+        color: T.textMuted,
+      }}
+    >
       {label}
     </div>
-    <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
-    <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.3)" }}>
+    <div style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: 800 }}>
+      {value}
+    </div>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "9px",
+        color: "rgba(255,255,255,0.3)",
+      }}
+    >
       {desc}
     </div>
   </div>
 );
 
 const styles = {
-  btnBack: {
-    position: "absolute",
-    left: "clamp(10px, 4vw, 40px)",
-    top: "clamp(10px, 4vw, 25px)",
+  btnBack: (isMobile) => ({
+    position: isMobile ? "static" : "absolute",
+    left: "40px",
+    top: "25px",
     background: "transparent",
     border: `1px solid ${T.border}`,
     color: T.textMuted,
     padding: "6px 12px",
     borderRadius: "6px",
     cursor: "pointer",
-  },
-  title: {
-    fontSize: "clamp(1.8rem, 5vw, 3.5rem)",
+    marginBottom: isMobile ? "10px" : "0",
+  }),
+  title: (isMobile) => ({
+    fontSize: isMobile ? "2.2rem" : "3.5rem",
     fontWeight: "900",
     margin: 0,
     background: "linear-gradient(90deg, #8B5CF6, #3B9EFF, #06B6D4)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-  },
-  canvas: {
-    flexGrow: 1,
-    maxHeight: "240px",
+  }),
+  canvas: (isMobile) => ({
+    flex: 1,
+    minHeight: isMobile ? "220px" : "260px",
     margin: "15px 0",
     background: "rgba(13,17,28,0.3)",
     borderRadius: "20px",
@@ -696,22 +746,24 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-  },
-  narrativeBox: {
+    padding: "20px",
+    overflowX: "auto",
+  }),
+  narrativeBox: (isMobile) => ({
     background: T.surface,
     borderRadius: "12px",
-    padding: "15px 30px",
+    padding: isMobile ? "15px" : "15px 30px",
     border: `1px solid ${T.border}`,
     marginBottom: "15px",
-    minHeight: "120px",
-  },
+    minHeight: isMobile ? "140px" : "120px",
+  }),
   narrativeHeader: {
     display: "flex",
     justifyContent: "space-between",
     color: "#818cf8",
     fontSize: "11px",
     fontWeight: 800,
-    marginBottom: "10px",
+    marginBottom: "12px",
   },
   phaseTag: {
     background: "#4f46e5",
@@ -729,70 +781,81 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
-  narrativeText: { fontSize: "17px", color: T.textMuted, lineHeight: 1.4 },
-  controls: {
+  narrativeText: (isMobile) => ({
+    fontSize: isMobile ? "14px" : "17px",
+    color: T.textMuted,
+    lineHeight: 1.4,
+  }),
+  controls: (isMobile) => ({
     display: "flex",
+    gap: "8px",
     flexWrap: "wrap",
-    gap: "10px",
     justifyContent: "center",
     paddingBottom: "20px",
     alignItems: "center",
-  },
-  input: {
+  }),
+  input: (isMobile) => ({
     background: "#05070A",
     border: `1px solid ${T.border}`,
     borderRadius: 8,
-    padding: "10px",
+    padding: isMobile ? "8px" : "10px",
     color: "#FFF",
-    width: "70px",
+    width: isMobile ? "50px" : "70px",
     textAlign: "center",
-  },
-  btnPrimary: {
+    fontSize: isMobile ? "12px" : "14px",
+  }),
+  btnPrimary: (isMobile) => ({
     background: T.accent,
     color: "#fff",
     border: "none",
-    padding: "10px 22px",
+    padding: isMobile ? "8px 16px" : "10px 22px",
     borderRadius: "10px",
     fontWeight: 700,
     cursor: "pointer",
-    fontSize: "14px",
-  },
-  btnSecondary: {
+    fontSize: isMobile ? "12px" : "14px",
+  }),
+  btnSecondary: (isMobile) => ({
     background: "rgba(255,255,255,0.03)",
     color: "#fff",
     border: `1px solid ${T.border}`,
-    padding: "10px 18px",
+    padding: isMobile ? "8px 12px" : "10px 18px",
     borderRadius: "10px",
     cursor: "pointer",
-    fontSize: "14px",
-  },
-  footerGrid: {
+    fontSize: isMobile ? "12px" : "14px",
+  }),
+  footerGrid: (isMobile) => ({
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
     gap: "20px",
-  },
-  infoCard: {
+  }),
+  infoCard: (isMobile) => ({
     background: T.surface,
-    padding: "18px 24px",
+    padding: isMobile ? "20px" : "18px 24px",
     borderRadius: "16px",
     border: `1px solid ${T.border}`,
-  },
-  footerH2: { color: T.cyan, fontSize: "24px", margin: "0 0 10px 0" },
-  footerP: {
-    fontSize: "14px",
+  }),
+  footerH2: (isMobile) => ({
+    color: T.cyan,
+    fontSize: isMobile ? "22px" : "24px",
+    margin: "0 0 10px 0",
+  }),
+  footerP: (isMobile) => ({
+    fontSize: isMobile ? "13px" : "14px",
     color: T.textMuted,
     lineHeight: "1.6",
     margin: 0,
-  },
-  codeBlock: {
+  }),
+  codeBlock: (isMobile) => ({
     background: "#020617",
-    padding: "15px",
+    padding: isMobile ? "12px" : "15px",
     borderRadius: "12px",
     color: T.cyan,
-    fontSize: "14px",
+    fontSize: isMobile ? "11px" : "14px",
     overflowX: "auto",
     border: `1px solid ${T.border}`,
-  },
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-all",
+  }),
   optBtn: {
     padding: "10px",
     background: "#111827",
@@ -800,10 +863,10 @@ const styles = {
     color: "#fff",
     borderRadius: "8px",
     cursor: "pointer",
-    fontSize: "13px",
+    fontSize: "12px",
     textAlign: "left",
   },
-  copyBtn: {
+  copyBtn: (isMobile) => ({
     background: T.border,
     color: "#fff",
     border: "none",
@@ -811,5 +874,5 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "12px",
-  },
+  }),
 };

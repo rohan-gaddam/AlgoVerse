@@ -85,17 +85,27 @@ export default function BubbleSortMasterclass() {
   const autoPlayRef = useRef(null);
   const stateRef = useRef({ array, i, j, phase, stats });
 
+  // Responsiveness State
+  const [width, setWidth] = useState(window.innerWidth);
+  useEffect(() => {
+    const handleResize = () => setWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  const isMobile = width < 768;
+
   useEffect(() => {
     stateRef.current = { array, i, j, phase, stats };
   }, [array, i, j, phase, stats]);
 
-  // 👇 ADD THIS HERE
   useEffect(() => {
     speechSynthesis.getVoices();
   }, []);
+
   const cleanText = (text) => {
     return text
-      .replace(/👉|✅|❌|🔁|🔍|🔄|🏁/g, "") // remove emojis
+      .replace(/👉|✅|❌|🔁|🔍|🔄|🏁/g, "")
       .replace(/\[.*?\]/g, "")
       .replace(/[{}()]/g, "")
       .replace(/=/g, " becomes ")
@@ -107,8 +117,6 @@ export default function BubbleSortMasterclass() {
 
   const getBestVoice = () => {
     const voices = window.speechSynthesis.getVoices();
-
-    // Prefer Google male voice (Chrome desktop)
     return (
       voices.find((v) => v.name.includes("Google US English")) ||
       voices.find((v) => v.name.includes("Google UK English")) ||
@@ -116,21 +124,19 @@ export default function BubbleSortMasterclass() {
       voices[0]
     );
   };
+
   const speak = (text) => {
     if (isMuted || !window.speechSynthesis || quiz.active) return;
-
     const cleaned = cleanText(text);
     const utterance = new SpeechSynthesisUtterance(cleaned);
-
     const voice = getBestVoice();
     if (voice) utterance.voice = voice;
-
     utterance.lang = "en-US";
     utterance.rate = 0.85;
     utterance.pitch = 1.05;
-
     window.speechSynthesis.speak(utterance);
   };
+
   const doStep = useCallback(() => {
     const st = stateRef.current;
     if (st.phase === "done") return;
@@ -146,58 +152,23 @@ export default function BubbleSortMasterclass() {
       case "start":
         if (ni >= newArr.length - 1) {
           nph = "done";
-
-          exp = `✅ SORT COMPLETE:
-
-After all passes, every element has moved to its correct position.
-
-👉 The largest elements settled at the end in each pass,
-so the array is now fully sorted from smallest to largest.`;
+          exp = `✅ SORT COMPLETE: After all passes, every element has moved to its correct position.\n\n👉 The largest elements settled at the end in each pass, so the array is now fully sorted from smallest to largest.`;
         } else {
           nph = "compare";
-
-          exp = `🔁 NEW PASS:
-
-We start pass ${ni + 1}.
-
-👉 In this pass, we compare adjacent elements
-and push the largest value toward the end.
-
-Each pass guarantees one element reaches its final position.`;
+          exp = `🔁 NEW PASS: We start pass ${ni + 1}.\n\n👉 In this pass, we compare adjacent elements and push the largest value toward the end.\n\nEach pass guarantees one element reaches its final position.`;
         }
         break;
 
       case "compare":
         nStats.cmp++;
-
         const left = newArr[nj];
         const right = newArr[nj + 1];
-
-        exp = `🔍 COMPARISON:
-
-👉 Comparing ${left} (index ${nj}) with ${right} (index ${nj + 1})
-
-We check: Is ${left} greater than ${right}?`;
-
+        exp = `🔍 COMPARISON: Comparing ${left} (index ${nj}) with ${right} (index ${nj + 1})\n\nWe check: Is ${left} greater than ${right}?`;
         if (left > right) {
           nph = "swap";
-
-          exp += `
-
-✅ Yes.
-
-${left} is larger, so it is in the wrong order.
-
-👉 We swap them so the larger value moves one step to the right.`;
+          exp += `\n\n✅ Yes. ${left} is larger, so it is in the wrong order.\n\n👉 We swap them so the larger value moves one step to the right.`;
         } else {
-          exp += `
-
-❌ No.
-
-They are already in correct order.
-
-👉 No swap needed, we move forward.`;
-
+          exp += `\n\n❌ No. They are already in correct order.\n\n👉 No swap needed, we move forward.`;
           if (nj < newArr.length - ni - 2) {
             nj = nj + 1;
             nph = "compare";
@@ -205,32 +176,17 @@ They are already in correct order.
             ni = ni + 1;
             nj = 0;
             nph = "start";
-
-            exp += `
-
-🏁 PASS COMPLETE:
-
-The largest element of this pass is now fixed at the end.`;
+            exp += `\n\n🏁 PASS COMPLETE: The largest element of this pass is now fixed at the end.`;
           }
         }
         break;
 
       case "swap":
         nStats.swp++;
-
         const a = newArr[nj];
         const b = newArr[nj + 1];
-
         [newArr[nj], newArr[nj + 1]] = [b, a];
-
-        exp = `🔄 SWAP:
-
-We swap ${a} and ${b}.
-
-👉 ${a} moves right, and ${b} moves left.
-
-This helps push larger elements toward the end step by step.`;
-
+        exp = `🔄 SWAP: We swap ${a} and ${b}.\n\n👉 ${a} moves right, and ${b} moves left.\n\nThis helps push larger elements toward the end step by step.`;
         if (nj < newArr.length - ni - 2) {
           nj = nj + 1;
           nph = "compare";
@@ -238,12 +194,7 @@ This helps push larger elements toward the end step by step.`;
           ni = ni + 1;
           nj = 0;
           nph = "start";
-
-          exp += `
-
-🏁 PASS COMPLETE:
-
-One more largest element has reached its correct position.`;
+          exp += `\n\n🏁 PASS COMPLETE: One more largest element has reached its correct position.`;
         }
         break;
 
@@ -258,9 +209,17 @@ One more largest element has reached its correct position.`;
     setPhase(nph);
     setStats(nStats);
     setExplanation(exp);
-
     if (!isPlaying) speak(exp);
   }, [isPlaying, isMuted]);
+
+  useEffect(() => {
+    if (isPlaying && phase !== "done") {
+      autoPlayRef.current = setInterval(doStep, 1500);
+    } else {
+      clearInterval(autoPlayRef.current);
+    }
+    return () => clearInterval(autoPlayRef.current);
+  }, [isPlaying, phase, doStep]);
 
   const handleAnswer = (idx) => {
     if (quiz.isLock) return;
@@ -327,7 +286,8 @@ One more largest element has reached its correct position.`;
         backgroundColor: T.bg,
         minHeight: "100vh",
         overflowY: "auto",
-        scrollSnapType: "y mandatory",
+        scrollSnapType: isMobile ? "none" : "y mandatory",
+        color: T.textMain,
       }}
     >
       {/* 🟢 PAGE 1 */}
@@ -336,31 +296,42 @@ One more largest element has reached its correct position.`;
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          padding: "clamp(10px, 3vw, 20px) clamp(12px, 5vw, 40px)",
+          padding: isMobile ? "15px" : "20px 40px",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
-          overflow: "visible",
-          justifyContent: "space-between",
         }}
       >
-        <button style={styles.btnBack} onClick={() => navigate("/")}>
-          ← Back
-        </button>
-        <header style={{ textAlign: "center" }}>
-          <h1 style={styles.title}>AlgoVerse</h1>
-          <div style={{ fontSize: "11px", color: T.textMuted }}>
+        <header
+          style={{
+            position: "relative",
+            textAlign: "center",
+            marginBottom: "20px",
+          }}
+        >
+          <button
+            style={styles.btnBack(isMobile)}
+            onClick={() => navigate("/")}
+          >
+            ← Back
+          </button>
+          <h1 style={styles.title(isMobile)}>AlgoVerse</h1>
+          <div
+            style={{ fontSize: isMobile ? "10px" : "11px", color: T.textMuted }}
+          >
             Bubble Sort Master Explorer
           </div>
         </header>
 
         <div
           style={{
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "clamp(8px, 2vw, 15px)",
+            display: "grid",
+            gridTemplateColumns: isMobile
+              ? "repeat(2, 1fr)"
+              : "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: isMobile ? "10px" : "15px",
             maxWidth: "1000px",
             width: "100%",
-            margin: "0 auto",
+            margin: "0 auto 15px",
           }}
         >
           <StatBox
@@ -368,34 +339,40 @@ One more largest element has reached its correct position.`;
             value={stats.cmp}
             color={T.cyan}
             desc="Logic Checks"
+            isMobile={isMobile}
           />
           <StatBox
             label="SWAPS"
             value={stats.swp}
             color={T.pink}
             desc="Movements"
+            isMobile={isMobile}
           />
           <StatBox
             label="PASS NUMBER"
             value={i + 1}
             color={T.purple}
             desc="Outer Loop"
+            isMobile={isMobile}
           />
           <StatBox
             label="CHECKING (j)"
             value={j}
             color={T.orange}
             desc="Target Index"
+            isMobile={isMobile}
           />
         </div>
 
-        <div style={styles.canvas}>
+        <div style={styles.canvas(isMobile)}>
           <div
             style={{
               display: "flex",
               alignItems: "flex-end",
-              gap: "clamp(4px, 1.5vw, 10px)",
-              height: "clamp(120px, 30vw, 180px)",
+              justifyContent: "center",
+              gap: isMobile ? "4px" : "12px",
+              height: isMobile ? "150px" : "200px",
+              width: "100%",
             }}
           >
             {array.map((val, idx) => {
@@ -415,8 +392,8 @@ One more largest element has reached its correct position.`;
                 >
                   <div
                     style={{
-                      width: "clamp(16px, 5vw, 42px)",
-                      height: `${val * 1.5}px`,
+                      width: isMobile ? "18px" : "45px", // FIXED: Width for desktop
+                      height: `${val * (isMobile ? 1.4 : 2.0)}px`,
                       backgroundColor:
                         phase === "done"
                           ? T.green
@@ -432,7 +409,7 @@ One more largest element has reached its correct position.`;
                   />
                   <div
                     style={{
-                      fontSize: "10px",
+                      fontSize: isMobile ? "8px" : "10px",
                       marginTop: "6px",
                       fontWeight: "bold",
                       color: isComparing ? T.pink : T.textMuted,
@@ -446,10 +423,10 @@ One more largest element has reached its correct position.`;
           </div>
         </div>
 
-        <div style={styles.narrativeBox}>
+        <div style={styles.narrativeBox(isMobile)}>
           <div style={styles.narrativeHeader}>
             <span>LIVE LOGIC INTERPRETER</span>
-            <div style={{ display: "flex", gap: "10px" }}>
+            <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
               {!quiz.active && !quiz.finished && (
                 <button
                   onClick={() => setQuiz({ ...quiz, active: true })}
@@ -461,26 +438,32 @@ One more largest element has reached its correct position.`;
               <span style={styles.phaseTag}>{phase.toUpperCase()}</span>
             </div>
           </div>
-          <div style={styles.narrativeText}>
+          <div style={styles.narrativeText(isMobile)}>
             {quiz.finished ? (
-              <div style={{ textAlign: "center", color: T.green }}>
+              <div
+                style={{
+                  textAlign: "center",
+                  color: T.green,
+                  fontSize: isMobile ? "20px" : "24px",
+                }}
+              >
                 🏆 MASTERY ACHIEVED: {quiz.score}%
               </div>
             ) : quiz.active ? (
               <div
                 style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                  gap: "20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "15px",
                 }}
               >
-                <div style={{ fontSize: "18px" }}>
+                <div style={{ fontSize: isMobile ? "14px" : "18px" }}>
                   {BUBBLE_QUIZ[quiz.step].q}
                 </div>
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                     gap: "10px",
                   }}
                 >
@@ -509,9 +492,9 @@ One more largest element has reached its correct position.`;
           </div>
         </div>
 
-        <div style={styles.controls}>
+        <div style={styles.controls(isMobile)}>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               if (history.length > 0) {
                 const p = history.pop();
@@ -525,34 +508,29 @@ One more largest element has reached its correct position.`;
           >
             Undo
           </button>
-          <button style={styles.btnPrimary} onClick={doStep}>
-            Next Step ▶
+          <button style={styles.btnPrimary(isMobile)} onClick={doStep}>
+            Next ▶
           </button>
           <button
-            style={styles.btnSecondary}
+            style={styles.btnSecondary(isMobile)}
             onClick={() => {
               const newMute = !isMuted;
-
-              if (newMute) {
-                // ❗ STOP speech immediately when muting
-                window.speechSynthesis.cancel();
-              }
-
+              if (newMute) window.speechSynthesis.cancel();
               setIsMuted(newMute);
             }}
           >
             {isMuted ? "🔇" : "🔊"}
-          </button>{" "}
+          </button>
           <button
             style={{
-              ...styles.btnPrimary,
+              ...styles.btnPrimary(isMobile),
               background: isPlaying ? T.pink : T.accent,
             }}
             onClick={() => setIsPlaying(!isPlaying)}
           >
-            {isPlaying ? "Pause" : "Auto Play"}
+            {isPlaying ? "Pause" : "Auto"}
           </button>
-          <button style={styles.btnSecondary} onClick={handleReset}>
+          <button style={styles.btnSecondary(isMobile)} onClick={handleReset}>
             Reset
           </button>
         </div>
@@ -564,41 +542,46 @@ One more largest element has reached its correct position.`;
           minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "center",
-          padding: "clamp(20px, 5vw, 60px)",
+          padding: isMobile ? "40px 20px" : "60px",
           boxSizing: "border-box",
           scrollSnapAlign: "start",
+          gap: "30px",
+          justifyContent: "center",
         }}
       >
-        <div style={styles.footerGrid}>
-          <div style={styles.infoCard}>
-            <h2 style={styles.footerH2}>How it Works</h2>
-            <p style={styles.footerP}>
+        <div style={styles.footerGrid(isMobile)}>
+          <div style={styles.infoCard(isMobile)}>
+            <h2 style={styles.footerH2(isMobile)}>How it Works</h2>
+            <p style={styles.footerP(isMobile)}>
               Bubble Sort steps through the list, compares adjacent elements and
               swaps them if they are in the wrong order. This repeats until the
               largest elements "bubble" to the end.
             </p>
           </div>
-          <div style={styles.infoCard}>
-            <h2 style={styles.footerH2}>Efficiency</h2>
-            <p style={styles.footerP}>
-              <b>Time:</b> Worst O(n²), Best O(n) if optimized.
+          <div style={styles.infoCard(isMobile)}>
+            <h2 style={styles.footerH2(isMobile)}>Efficiency</h2>
+            <p style={styles.footerP(isMobile)}>
+              <b>Time:</b> Worst O(n²), Best O(n).
               <br />
               <b>Space:</b> O(1) auxiliary space (In-place).
             </p>
           </div>
         </div>
-        <div style={{ ...styles.infoCard, marginTop: "40px" }}>
+        <div style={styles.infoCard(isMobile)}>
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               justifyContent: "space-between",
               alignItems: "center",
               marginBottom: "15px",
+              gap: "10px",
             }}
           >
-            <h2 style={{ color: T.pink, fontSize: "24px" }}>Implementation</h2>
-            <div style={{ display: "flex", gap: "15px" }}>
+            <h2 style={{ color: T.pink, fontSize: isMobile ? "20px" : "24px" }}>
+              Implementation
+            </h2>
+            <div style={{ display: "flex", gap: "12px" }}>
               {["Java", "Python", "C++", "C"].map((l) => (
                 <span
                   key={l}
@@ -608,22 +591,25 @@ One more largest element has reached its correct position.`;
                     fontWeight: 800,
                     cursor: "pointer",
                     opacity: activeLang === l ? 1 : 0.5,
+                    fontSize: isMobile ? "12px" : "14px",
                   }}
                 >
                   {l}
                 </span>
               ))}
               <button
-                style={styles.copyBtn}
-                onClick={() =>
-                  navigator.clipboard.writeText(codeSnippets[activeLang])
-                }
+                style={styles.copyBtn(isMobile)}
+                onClick={() => {
+                  navigator.clipboard.writeText(codeSnippets[activeLang]);
+                  setCopyStatus("Copied!");
+                  setTimeout(() => setCopyStatus("Copy"), 2000);
+                }}
               >
                 {copyStatus}
               </button>
             </div>
           </div>
-          <pre style={styles.codeBlock}>
+          <pre style={styles.codeBlock(isMobile)}>
             <code>{codeSnippets[activeLang]}</code>
           </pre>
         </div>
@@ -632,50 +618,63 @@ One more largest element has reached its correct position.`;
   );
 }
 
-const StatBox = ({ label, value, color, desc }) => (
+const StatBox = ({ label, value, color, desc, isMobile }) => (
   <div
     style={{
-      flex: 1,
-      padding: "12px 15px",
+      padding: isMobile ? "10px" : "12px 15px",
       borderRadius: "12px",
       border: `1px solid ${T.border}`,
       borderTop: `3px solid ${color}`,
       background: T.surface,
     }}
   >
-    <div style={{ fontSize: "10px", fontWeight: 700, color: T.textMuted }}>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "10px",
+        fontWeight: 700,
+        color: T.textMuted,
+      }}
+    >
       {label}
     </div>
-    <div style={{ fontSize: "22px", fontWeight: 800 }}>{value}</div>
-    <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.3)" }}>
+    <div style={{ fontSize: isMobile ? "18px" : "22px", fontWeight: 800 }}>
+      {value}
+    </div>
+    <div
+      style={{
+        fontSize: isMobile ? "8px" : "9px",
+        color: "rgba(255,255,255,0.3)",
+      }}
+    >
       {desc}
     </div>
   </div>
 );
 
 const styles = {
-  btnBack: {
-    position: "absolute",
-    left: "clamp(10px, 4vw, 40px)",
-    top: "clamp(10px, 4vw, 25px)",
+  btnBack: (isMobile) => ({
+    position: isMobile ? "static" : "absolute",
+    left: "40px",
+    top: "25px",
     background: "transparent",
     border: `1px solid ${T.border}`,
     color: T.textMuted,
     padding: "6px 12px",
     borderRadius: "6px",
     cursor: "pointer",
-  },
-  title: {
-    fontSize: "clamp(1.8rem, 5vw, 3rem)",
+    marginBottom: isMobile ? "10px" : "0",
+  }),
+  title: (isMobile) => ({
+    fontSize: isMobile ? "2.2rem" : "3.5rem",
     fontWeight: "900",
     margin: 0,
     background: "linear-gradient(90deg, #60a5fa, #3b82f6, #0ea5e9)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-  },
-  canvas: {
-    flexGrow: 1,
-    maxHeight: "240px",
+  }),
+  canvas: (isMobile) => ({
+    flex: 1,
+    minHeight: isMobile ? "220px" : "260px",
     margin: "15px 0",
     background: "rgba(13,17,28,0.3)",
     borderRadius: "20px",
@@ -683,22 +682,24 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-  },
-  narrativeBox: {
+    padding: "20px",
+    overflowX: "auto",
+  }),
+  narrativeBox: (isMobile) => ({
     background: T.surface,
     borderRadius: "12px",
-    padding: "15px 30px",
+    padding: isMobile ? "15px" : "15px 30px",
     border: `1px solid ${T.border}`,
     marginBottom: "15px",
-    minHeight: "120px",
-  },
+    minHeight: isMobile ? "140px" : "120px",
+  }),
   narrativeHeader: {
     display: "flex",
     justifyContent: "space-between",
     color: "#f43f5e",
     fontSize: "11px",
     fontWeight: 800,
-    marginBottom: "8px",
+    marginBottom: "12px",
   },
   phaseTag: {
     background: "#f43f5e",
@@ -716,63 +717,70 @@ const styles = {
     fontWeight: "bold",
     cursor: "pointer",
   },
-  narrativeText: {
-    fontSize: "clamp(13px, 3.5vw, 17px)",
+  narrativeText: (isMobile) => ({
+    fontSize: isMobile ? "14px" : "17px",
     color: T.textMuted,
     lineHeight: 1.4,
-  },
-  controls: {
+  }),
+  controls: (isMobile) => ({
     display: "flex",
+    gap: "8px",
     flexWrap: "wrap",
-    gap: "10px",
     justifyContent: "center",
-  },
-  btnPrimary: {
+    paddingBottom: "20px",
+  }),
+  btnPrimary: (isMobile) => ({
     background: T.accent,
     color: "#fff",
     border: "none",
-    padding: "10px 22px",
+    padding: isMobile ? "8px 16px" : "10px 22px",
     borderRadius: "10px",
     fontWeight: 700,
     cursor: "pointer",
-    fontSize: "13px",
-  },
-  btnSecondary: {
+    fontSize: isMobile ? "12px" : "13px",
+  }),
+  btnSecondary: (isMobile) => ({
     background: "rgba(255,255,255,0.03)",
     color: "#fff",
     border: `1px solid ${T.border}`,
-    padding: "10px 18px",
+    padding: isMobile ? "8px 12px" : "10px 18px",
     borderRadius: "10px",
     cursor: "pointer",
-    fontSize: "13px",
-  },
-  footerGrid: {
+    fontSize: isMobile ? "12px" : "13px",
+  }),
+  footerGrid: (isMobile) => ({
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
     gap: "20px",
-  },
-  infoCard: {
+  }),
+  infoCard: (isMobile) => ({
     background: T.surface,
-    padding: "18px 24px",
+    padding: isMobile ? "20px" : "18px 24px",
     borderRadius: "16px",
     border: `1px solid ${T.border}`,
-  },
-  footerH2: { color: T.cyan, fontSize: "24px", margin: "0 0 10px 0" },
-  footerP: {
-    fontSize: "14px",
+  }),
+  footerH2: (isMobile) => ({
+    color: T.cyan,
+    fontSize: isMobile ? "22px" : "24px",
+    margin: "0 0 10px 0",
+  }),
+  footerP: (isMobile) => ({
+    fontSize: isMobile ? "13px" : "14px",
     color: T.textMuted,
     lineHeight: "1.5",
     margin: 0,
-  },
-  codeBlock: {
+  }),
+  codeBlock: (isMobile) => ({
     background: "#020617",
-    padding: "15px",
+    padding: isMobile ? "12px" : "15px",
     borderRadius: "12px",
     color: T.cyan,
-    fontSize: "14px",
+    fontSize: isMobile ? "11px" : "14px",
     overflowX: "auto",
     border: `1px solid ${T.border}`,
-  },
+    whiteSpace: "pre-wrap",
+    wordBreak: "break-all",
+  }),
   optBtn: {
     padding: "10px",
     background: "#111827",
@@ -780,10 +788,10 @@ const styles = {
     color: "#fff",
     borderRadius: "8px",
     cursor: "pointer",
-    fontSize: "13px",
+    fontSize: "12px",
     textAlign: "left",
   },
-  copyBtn: {
+  copyBtn: (isMobile) => ({
     background: T.border,
     color: "#fff",
     border: "none",
@@ -791,5 +799,5 @@ const styles = {
     borderRadius: "6px",
     cursor: "pointer",
     fontSize: "12px",
-  },
+  }),
 };

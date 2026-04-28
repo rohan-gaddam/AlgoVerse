@@ -90,7 +90,6 @@ export default function SelectionSortMasterclass() {
   }, []);
 
   const isMobile = width < 768;
-  const isTablet = width >= 768 && width < 1024;
 
   useEffect(() => {
     stateRef.current = { arr, i, j, minIdx, phase, stats };
@@ -350,7 +349,7 @@ to place the correct element at index ${si}.`;
             display: "grid",
             gridTemplateColumns: isMobile
               ? "repeat(2, 1fr)"
-              : "repeat(auto-fit, minmax(150px, 1fr))",
+              : "repeat(auto-fit, minmax(160px, 1fr))",
             gap: isMobile ? "10px" : "15px",
             maxWidth: "1000px",
             width: "100%",
@@ -392,8 +391,10 @@ to place the correct element at index ${si}.`;
             style={{
               display: "flex",
               alignItems: "flex-end",
-              gap: isMobile ? "4px" : "8px",
-              height: isMobile ? "140px" : "180px",
+              justifyContent: "center",
+              gap: isMobile ? "4px" : "12px",
+              height: isMobile ? "140px" : "200px",
+              width: "100%",
             }}
           >
             {arr.map((val, idx) => {
@@ -408,14 +409,12 @@ to place the correct element at index ${si}.`;
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
-                    flex: 1,
                   }}
                 >
                   <div
                     style={{
-                      width: "100%",
-                      maxWidth: isMobile ? "20px" : "35px",
-                      height: `${val * (isMobile ? 1.2 : 1.8)}px`,
+                      width: isMobile ? "20px" : "45px", // FIXED: Increased desktop width for better visibility
+                      height: `${val * (isMobile ? 1.2 : 2.0)}px`,
                       background:
                         phase === "done"
                           ? T.green
@@ -436,9 +435,9 @@ to place the correct element at index ${si}.`;
                   >
                     <span
                       style={{
-                        fontSize: isMobile ? "8px" : "10px",
+                        fontSize: isMobile ? "8px" : "11px",
                         fontWeight: 800,
-                        marginTop: "-15px",
+                        marginTop: "-18px",
                       }}
                     >
                       {val}
@@ -446,7 +445,7 @@ to place the correct element at index ${si}.`;
                   </div>
                   <div
                     style={{
-                      fontSize: isMobile ? "8px" : "10px",
+                      fontSize: isMobile ? "8px" : "11px",
                       marginTop: "6px",
                       fontWeight: "bold",
                       color: isMin
@@ -757,7 +756,7 @@ const styles = {
     marginBottom: isMobile ? "10px" : "0",
   }),
   title: (isMobile) => ({
-    fontSize: isMobile ? "2rem" : "3rem",
+    fontSize: isMobile ? "2rem" : "3.5rem",
     fontWeight: "900",
     margin: 0,
     background: "linear-gradient(to right, #10b981, #3b82f6, #6366f1)",
@@ -765,9 +764,8 @@ const styles = {
     WebkitTextFillColor: "transparent",
   }),
   canvas: (isMobile) => ({
-    flex: isMobile ? "none" : 1,
-    height: isMobile ? "200px" : "auto",
-    maxHeight: "220px",
+    flex: 1,
+    minHeight: isMobile ? "200px" : "260px",
     margin: "15px 0",
     background: "rgba(13,17,28,0.3)",
     borderRadius: "20px",
@@ -775,7 +773,8 @@ const styles = {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    padding: "10px",
+    padding: "20px",
+    overflowX: "auto",
   }),
   narrativeBox: (isMobile) => ({
     background: T.surface,

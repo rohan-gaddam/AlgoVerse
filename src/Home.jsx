@@ -31,6 +31,7 @@ export default function Home() {
         };
   });
 
+  // RESTORED ALL ORIGINAL ANIMATIONS
   useEffect(() => {
     const style = document.createElement("style");
     style.textContent = `
@@ -184,10 +185,10 @@ export default function Home() {
             animation: "slideIn 1s ease-out",
           }}
         >
-          {/* Why AlgoVerse Glowing Box */}
           <div
             style={{
               textAlign: isMobile ? "center" : "left",
+              animation: "floatSlow 5s ease-in-out infinite", // RESTORED
               padding: isMobile ? "10px" : "30px",
             }}
           >
@@ -201,6 +202,7 @@ export default function Home() {
                 borderRadius: "100px",
                 border: "1px solid rgba(16, 185, 129, 0.3)",
                 marginBottom: "20px",
+                boxShadow: "0 0 20px rgba(16, 185, 129, 0.1)",
               }}
             >
               <div
@@ -253,12 +255,10 @@ export default function Home() {
               }}
             >
               Abstract code is hard to grasp. We transform logic into
-              interactive cinematic experiences, helping you master complex
-              patterns through sight and sound.
+              interactive cinematic experiences.
             </p>
           </div>
 
-          {/* Feature Grid */}
           <div
             style={{
               display: "grid",
@@ -280,6 +280,8 @@ export default function Home() {
                   border: "1px solid rgba(255,255,255,0.05)",
                   backdropFilter: "blur(10px)",
                   gridColumn: i === 2 && !isMobile ? "span 2" : "auto",
+                  animation: `float ${4 + i}s ease-in-out infinite`, // RESTORED
+                  animationDelay: `${i * 0.5}s`,
                 }}
               >
                 <div style={{ fontSize: "1.5rem", marginBottom: "8px" }}>
@@ -299,29 +301,18 @@ export default function Home() {
                 </div>
               </div>
             ))}
-
             <div
               style={{
                 gridColumn: "span 2",
                 padding: "15px",
-                background:
-                  "linear-gradient(135deg, rgba(99,102,241,0.1), rgba(34,211,238,0.1))",
                 borderRadius: "20px",
                 border: "1px solid rgba(99,102,241,0.2)",
+                background:
+                  "linear-gradient(135deg, rgba(99,102,241,0.1), rgba(34,211,238,0.1))",
+                animation: "floatSlow 6s ease-in-out infinite", // RESTORED
                 textAlign: "center",
               }}
             >
-              <div
-                style={{
-                  fontSize: "0.7rem",
-                  color: "#818cf8",
-                  fontWeight: "800",
-                  letterSpacing: "1px",
-                  marginBottom: "5px",
-                }}
-              >
-                LANGUAGES
-              </div>
               <div
                 style={{
                   display: "flex",
@@ -339,7 +330,13 @@ export default function Home() {
         </div>
 
         {/* LOGO AREA */}
-        <div style={{ textAlign: "center", margin: "40px 0" }}>
+        <div
+          style={{
+            textAlign: "center",
+            margin: "40px 0",
+            animation: "floatFast 8s ease-in-out infinite",
+          }}
+        >
           <h1
             style={{
               fontSize: isMobile ? "3.5rem" : "5.5rem",
@@ -373,6 +370,7 @@ export default function Home() {
             maxWidth: "600px",
             position: "relative",
             marginBottom: "60px",
+            animation: "floatSlow 7s ease-in-out infinite", // RESTORED
           }}
         >
           <input
@@ -422,13 +420,16 @@ export default function Home() {
                   cursor: "pointer",
                   transition: "all 0.3s ease",
                   textAlign: "center",
+                  animation: `float 6s ease-in-out infinite ${index * 0.4}s`, // RESTORED
                 }}
                 onMouseEnter={(e) => {
                   if (!isMobile) {
-                    e.currentTarget.style.transform = "translateY(-10px)";
+                    e.currentTarget.style.transform =
+                      "translateY(-15px) scale(1.05)";
                     e.currentTarget.style.borderColor = "#6366f1";
                     e.currentTarget.style.boxShadow =
-                      "0 20px 40px rgba(99,102,241,0.2)";
+                      "0 20px 40px rgba(99,102,241,0.3)";
+                    e.currentTarget.style.animationPlayState = "paused";
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -436,6 +437,7 @@ export default function Home() {
                     e.currentTarget.style.transform = "none";
                     e.currentTarget.style.borderColor = "rgba(99,102,241,0.2)";
                     e.currentTarget.style.boxShadow = "none";
+                    e.currentTarget.style.animationPlayState = "running";
                   }
                 }}
               >
